@@ -1,0 +1,11 @@
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\bin\Debug\net8.0\TeamTaskManager.DTO.deps.json
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\bin\Debug\net8.0\TeamTaskManager.DTO.dll
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\bin\Debug\net8.0\TeamTaskManager.DTO.pdb
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\obj\Debug\net8.0\TeamTaskManager.DTO.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\obj\Debug\net8.0\TeamTaskManager.DTO.AssemblyInfoInputs.cache
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\obj\Debug\net8.0\TeamTaskManager.DTO.AssemblyInfo.cs
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\obj\Debug\net8.0\TeamTaskManager.DTO.csproj.CoreCompileInputs.cache
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\obj\Debug\net8.0\TeamTaskManager.DTO.dll
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\obj\Debug\net8.0\refint\TeamTaskManager.DTO.dll
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\obj\Debug\net8.0\TeamTaskManager.DTO.pdb
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\obj\Debug\net8.0\ref\TeamTaskManager.DTO.dll

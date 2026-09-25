@@ -1,0 +1,15 @@
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\bin\Debug\net8.0\TeamTaskManager.Entities.deps.json
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\bin\Debug\net8.0\TeamTaskManager.Entities.dll
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\bin\Debug\net8.0\TeamTaskManager.Entities.pdb
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\bin\Debug\net8.0\TeamTaskManager.Core.dll
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\bin\Debug\net8.0\TeamTaskManager.Core.pdb
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\obj\Debug\net8.0\TeamTaskManager.Entities.csproj.AssemblyReference.cache
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\obj\Debug\net8.0\TeamTaskManager.Entities.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\obj\Debug\net8.0\TeamTaskManager.Entities.AssemblyInfoInputs.cache
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\obj\Debug\net8.0\TeamTaskManager.Entities.AssemblyInfo.cs
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\obj\Debug\net8.0\TeamTaskManager.Entities.csproj.CoreCompileInputs.cache
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\obj\Debug\net8.0\TeamTask.D0F738EC.Up2Date
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\obj\Debug\net8.0\TeamTaskManager.Entities.dll
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\obj\Debug\net8.0\refint\TeamTaskManager.Entities.dll
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\obj\Debug\net8.0\TeamTaskManager.Entities.pdb
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Entities\obj\Debug\net8.0\ref\TeamTaskManager.Entities.dll
