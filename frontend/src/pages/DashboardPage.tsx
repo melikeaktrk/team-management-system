@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import { notificationApi } from '../api/notificationApi';
 import { projectApi } from '../api/projectApi';
 import type { NotificationItem, Project } from '../types';
+import type { ProjectReport } from '../types';
 import { formatTurkishDate } from '../utils/formatDate';
 
 export function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [reports, setReports] = useState<ProjectReport[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,10 +25,14 @@ export function DashboardPage() {
           projectApi.getAll(),
           notificationApi.getAll(),
         ]);
+        const reportResponses = await Promise.allSettled(
+          projectsResponse.data.map((project) => projectApi.getReport(project.id))
+        );
 
         if (isMounted) {
           setProjects(projectsResponse.data || []);
           setNotifications(notificationsResponse.data || []);
+          setReports(reportResponses.flatMap((result) => result.status === 'fulfilled' ? [result.value.data] : []));
         }
       } catch (err) {
         if (isMounted) {
@@ -77,11 +83,16 @@ export function DashboardPage() {
   const activeProjectsCount = projects.filter(
     (p) => p.status === 'InProgress'
   ).length;
+  const unreadNotifications = notifications.filter((notification) => !notification.isRead);
+  const totalTasks = reports.reduce((sum, report) => sum + report.totalTasks, 0);
+  const completedTasks = reports.reduce((sum, report) => sum + report.completedTasks, 0);
+  const inProgressTasks = reports.reduce((sum, report) => sum + report.inProgressTasks, 0);
+  const overdueTasks = reports.reduce((sum, report) => sum + report.overdueTasks, 0);
 
   return (
     <div className="page-stack">
       {/* İstatistik Kartları */}
-      <section className="stats-grid">
+      <section className="stats-grid dashboard-stats">
         <div className="stat-card accent">
           <span>Toplam Proje</span>
           <strong>{projects.length}</strong>
@@ -92,8 +103,12 @@ export function DashboardPage() {
         </div>
         <div className="stat-card">
           <span>Bildirimler</span>
-          <strong>{notifications.length}</strong>
+          <strong>{unreadNotifications.length}</strong>
         </div>
+        <div className="stat-card"><span>Toplam görev</span><strong>{totalTasks}</strong></div>
+        <div className="stat-card"><span>Tamamlanan görev</span><strong>{completedTasks}</strong></div>
+        <div className="stat-card"><span>Devam eden görev</span><strong>{inProgressTasks}</strong></div>
+        <div className="stat-card"><span>Geciken görev</span><strong>{overdueTasks}</strong></div>
       </section>
 
       {/* Son Projeler Paneli */}
@@ -133,10 +148,10 @@ export function DashboardPage() {
         </div>
 
         <ul className="list-group">
-          {notifications.length === 0 ? (
+          {unreadNotifications.length === 0 ? (
             <li className="empty-state">Henüz okunmamış bildiriminiz yok.</li>
           ) : (
-            notifications.slice(0, 5).map((notification) => (
+            unreadNotifications.slice(0, 5).map((notification) => (
               <li key={notification.id} className="notification-item">
                 <div className="notification-content">
                   <strong>{notification.title}</strong>

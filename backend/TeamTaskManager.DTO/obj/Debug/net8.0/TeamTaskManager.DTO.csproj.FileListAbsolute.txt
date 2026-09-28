@@ -13,3 +13,6 @@ C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DTO\obj\D
 C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.DTO.deps.json
 C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.DTO.dll
 C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.DTO.pdb
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\di-fix-build\Debug\net8.0\TeamTaskManager.DTO.deps.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\di-fix-build\Debug\net8.0\TeamTaskManager.DTO.dll
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\di-fix-build\Debug\net8.0\TeamTaskManager.DTO.pdb

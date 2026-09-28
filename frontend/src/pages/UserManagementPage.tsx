@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { userApi } from '../api/userApi';
-import type { User } from '../types';
+import type { User, UserUpdateRequest } from '../types';
 
 const emptyForm = {
   userName: '',
@@ -15,6 +15,9 @@ export function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<UserUpdateRequest>({});
 
   const loadUsers = async () => {
     try {
@@ -33,12 +36,14 @@ export function UserManagementPage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    setSuccess(null);
 
     try {
       // POST /api/User çağrısı
       await userApi.create(form);
       setForm(emptyForm); // Formu sıfırla
       await loadUsers();  // Kullanıcı listesini otomatik güncelle
+      setSuccess('Kullanıcı oluşturuldu.');
     } catch (err) {
       console.error(err);
       setError('Kullanıcı oluşturulamadı. Bilgileri kontrol ediniz.');
@@ -65,8 +70,48 @@ export function UserManagementPage() {
     }
   };
 
+  const startEdit = (user: User) => {
+    setError(null);
+    setSuccess(null);
+    setEditingUserId(user.id);
+    setEditForm({ userName: user.userName, email: user.email, firstName: user.firstName ?? '', lastName: user.lastName ?? '' });
+  };
+
+  const saveUser = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!editingUserId) return;
+    setError(null);
+    setSuccess(null);
+    try {
+      await userApi.update(editingUserId, editForm);
+      setEditingUserId(null);
+      setEditForm({});
+      await loadUsers();
+      setSuccess('Kullanıcı bilgileri güncellendi.');
+    } catch (err) {
+      console.error(err);
+      setError('Kullanıcı bilgileri güncellenemedi. E-posta veya kullanıcı adı kullanımda olabilir.');
+    }
+  };
+
   return (
     <div className="page-stack">
+      {error && <div className="error-box">{error}</div>}
+      {success && <div className="success-box">{success}</div>}
+      {editingUserId && <section className="panel">
+        <div className="panel-header"><h3>Kullanıcı bilgilerini düzenle</h3></div>
+        <form onSubmit={saveUser} className="form-grid">
+          <div className="two-column">
+            <label>Kullanıcı adı<input required maxLength={100} value={editForm.userName ?? ''} onChange={(event) => setEditForm((current) => ({ ...current, userName: event.target.value }))} /></label>
+            <label>E-posta<input required type="email" maxLength={255} value={editForm.email ?? ''} onChange={(event) => setEditForm((current) => ({ ...current, email: event.target.value }))} /></label>
+          </div>
+          <div className="two-column">
+            <label>Ad<input maxLength={100} value={editForm.firstName ?? ''} onChange={(event) => setEditForm((current) => ({ ...current, firstName: event.target.value }))} /></label>
+            <label>Soyad<input maxLength={100} value={editForm.lastName ?? ''} onChange={(event) => setEditForm((current) => ({ ...current, lastName: event.target.value }))} /></label>
+          </div>
+          <div className="filter-actions"><button type="submit">Değişiklikleri kaydet</button><button type="button" onClick={() => setEditingUserId(null)}>Vazgeç</button></div>
+        </form>
+      </section>}
       {/* 1. ÜST KISIM: Yeni Kullanıcı Oluştur Formu */}
       <section className="panel">
         <div className="panel-header">
@@ -135,8 +180,6 @@ export function UserManagementPage() {
             </select>
           </label>
 
-          {error && <div className="error-box">{error}</div>}
-
           <button type="submit">Kullanıcı oluştur</button>
         </form>
       </section>
@@ -172,6 +215,9 @@ export function UserManagementPage() {
                 <span className={`status-chip ${user.isActive ? '' : 'inactive'}`}>
                   {user.isActive ? 'Aktif' : 'Pasif'}
                 </span>
+              </div>
+              <div>
+                <button type="button" onClick={() => startEdit(user)}>Düzenle</button>
               </div>
               <div>
                 <button type="button" onClick={() => toggleStatus(user)}>

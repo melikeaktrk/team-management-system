@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using TeamTaskManager.Business.Services;
 using TeamTaskManager.DTO.Project;
 
@@ -12,11 +13,16 @@ namespace TeamTaskManager.API.Controllers;
 public class ProjectController : ControllerBase
 {
     private readonly IProjectService _projectService;
+    private readonly ITaskService _taskService;
 
-    public ProjectController(IProjectService projectService)
+    [ActivatorUtilitiesConstructor]
+    public ProjectController(IProjectService projectService, ITaskService taskService)
     {
         _projectService = projectService;
+        _taskService = taskService;
     }
+
+    public ProjectController(IProjectService projectService) : this(projectService, null!) { }
 [HttpGet]
 public async Task<IActionResult> GetAll()
 {
@@ -44,7 +50,7 @@ public async Task<IActionResult> GetAll()
 }
 
   [HttpGet("{id:guid}")]
-public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id)
 {
     var userId = GetCurrentUserId();
 
@@ -329,6 +335,29 @@ public async Task<IActionResult> GetAvailableUsers(
         return members.Any(member => member.UserId == userId.Value)
             ? Ok(members)
             : Forbid();
+    }
+
+    [HttpGet("{id:guid}/report")]
+    public async Task<IActionResult> GetReport(Guid id)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null) return Unauthorized();
+        var project = await _projectService.GetByIdAsync(id);
+        if (project is null) return NotFound();
+        if (!User.IsInRole("Admin"))
+        {
+            if (User.IsInRole("ProjectManager"))
+            {
+                if (!await _projectService.IsManagerAsync(id, userId.Value)) return Forbid();
+            }
+            else
+            {
+                var members = await _projectService.GetMembersAsync(id);
+                if (!members.Any(member => member.UserId == userId.Value)) return Forbid();
+            }
+        }
+        var report = await _taskService.GetProjectReportAsync(id);
+        return report is null ? NotFound() : Ok(report);
     }
 [HttpPost("{projectId:guid}/members")]
 public async Task<IActionResult> AddMember(

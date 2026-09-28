@@ -88,6 +88,14 @@ public class TaskAttachmentService : ITaskAttachmentService
         try
         {
             await _unitOfWork.TaskAttachments.AddAsync(attachment);
+            await _unitOfWork.ActivityLogs.AddAsync(new ActivityLog
+            {
+                UserId = userId,
+                EntityType = nameof(TaskItem),
+                EntityId = taskId,
+                Action = "TaskAttachmentUploaded",
+                Description = $"'{originalFileName}' dosyası göreve eklendi."
+            });
             await _unitOfWork.SaveChangesAsync();
         }
         catch

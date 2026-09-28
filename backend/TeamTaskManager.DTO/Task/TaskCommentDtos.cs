@@ -44,6 +44,7 @@ public class TaskItemUpdateRequest : IValidatableObject
     public string? Priority { get; set; }
     public DateTime? DueDate { get; set; }
     public Guid? AssignedToUserId { get; set; }
+    public bool ClearAssignment { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

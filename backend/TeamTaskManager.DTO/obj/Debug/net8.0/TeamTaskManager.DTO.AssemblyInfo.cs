@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TeamTaskManager.DTO")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ae253e5f679ecf11ce60df635419f316aab02bd5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e6752e49320449af1b7a0dbe2d69d9f41ad15710")]
 [assembly: System.Reflection.AssemblyProductAttribute("TeamTaskManager.DTO")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TeamTaskManager.DTO")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -93,6 +93,11 @@ export type ProjectMember = {
   projectId: string;
   userId: string;
   role: string;
+  userName?: string | null;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  isActive?: boolean;
   joinedAt: string;
 };
 
@@ -104,6 +109,7 @@ export type TaskItem = {
   status: string;
   priority: string;
   dueDate?: string | null;
+  completedDate?: string | null;
   assignedToUserId?: string | null;
   createdAt?: string;
 };
@@ -124,11 +130,54 @@ export type TaskItemUpdateRequest = {
   priority?: string;
   dueDate?: string | null;
   assignedToUserId?: string | null;
+  clearAssignment?: boolean;
 };
 
 export type TaskCommentCreateRequest = {
   taskItemId: string;
   content: string;
+};
+
+export type TaskSearchRequest = {
+  status?: string;
+  priority?: string;
+  assignedToUserId?: string;
+  dueFrom?: string;
+  dueTo?: string;
+  pageNumber: number;
+  pageSize: number;
+  sortBy: string;
+  sortDirection: 'asc' | 'desc';
+};
+
+export type PagedResponse<T> = {
+  items: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+};
+
+export type TaskActivity = {
+  id: string;
+  userId?: string | null;
+  userName?: string | null;
+  action: string;
+  entityType: string;
+  description?: string | null;
+  createdAt: string;
+};
+
+export type ProjectReport = {
+  projectId: string;
+  projectName: string;
+  totalTasks: number;
+  completedTasks: number;
+  inProgressTasks: number;
+  overdueTasks: number;
+  completionPercentage: number;
+  memberTaskDistribution: { userId: string; userName: string; openTasks: number; completedTasks: number }[];
+  recentActivities: TaskActivity[];
 };
 
 export type TaskAttachment = {
@@ -143,6 +192,11 @@ export type TaskAttachment = {
 
 export type NotificationItem = {
   id: string;
+  userId: string;
   title: string;
   message: string;
+  isRead: boolean;
+  type: string;
+  relatedEntityId?: string | null;
+  createdAt: string;
 };

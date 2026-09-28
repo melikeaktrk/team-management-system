@@ -59,8 +59,12 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(_ => "New"));
 
         CreateMap<TaskItemUpdateRequest, TaskItem>()
+            .ForMember(dest => dest.Title, opt => opt.Condition((src, dest, value) => value is not null))
+            .ForMember(dest => dest.Description, opt => opt.Condition((src, dest, value) => value is not null))
             .ForMember(dest => dest.Status, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Status)))
-            .ForMember(dest => dest.Priority, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Priority)));
+            .ForMember(dest => dest.Priority, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Priority)))
+            .ForMember(dest => dest.DueDate, opt => opt.Condition((src, dest, value) => value is not null))
+            .ForMember(dest => dest.AssignedToUserId, opt => opt.Condition((src, dest, value) => value is not null));
 
         CreateMap<TaskItem, TaskItemResponse>();
 

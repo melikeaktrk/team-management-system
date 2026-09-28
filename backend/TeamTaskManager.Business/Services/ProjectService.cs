@@ -262,10 +262,18 @@ public class ProjectService : IProjectService
                 .Where(member =>
                     member.ProjectId == projectId)
                 .ToList();
-
-        return _mapper.Map<
-            IEnumerable<ProjectMemberResponse>>(
-            projectMembers);
+        var users = (await _unitOfWork.Users.GetAllAsync()).ToDictionary(user => user.Id);
+        var responses = _mapper.Map<List<ProjectMemberResponse>>(projectMembers);
+        foreach (var response in responses)
+        {
+            if (!users.TryGetValue(response.UserId, out var user)) continue;
+            response.UserName = user.UserName;
+            response.Email = user.Email;
+            response.FirstName = user.FirstName;
+            response.LastName = user.LastName;
+            response.IsActive = projectMembers.First(member => member.Id == response.Id).IsActive && user.IsActive;
+        }
+        return responses;
     }
 
     public async Task<ProjectMemberResponse>

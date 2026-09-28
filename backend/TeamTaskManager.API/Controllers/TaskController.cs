@@ -48,6 +48,31 @@ public class TaskController : ControllerBase
         return Ok(assignedTasks.Where(task => task.AssignedToUserId == userId.Value));
     }
 
+    [HttpGet("project/{projectId:guid}/search")]
+    public async Task<IActionResult> SearchByProject(Guid projectId, [FromQuery] TaskSearchRequest request)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null) return Unauthorized();
+        if (request.PageNumber < 1 || request.PageSize < 1 || request.PageSize > 100)
+            return BadRequest(new { message = "Sayfa numarası en az 1, sayfa boyutu 1-100 arasında olmalıdır." });
+        if (request.DueFrom.HasValue && request.DueTo.HasValue && request.DueFrom > request.DueTo)
+            return BadRequest(new { message = "Başlangıç tarihi bitiş tarihinden sonra olamaz." });
+
+        if (!User.IsInRole("Admin"))
+        {
+            if (User.IsInRole("ProjectManager"))
+            {
+                if (!await _projectService.IsManagerAsync(projectId, userId.Value)) return Forbid();
+            }
+            else if (!User.IsInRole("TeamMember")) return Forbid();
+        }
+
+        if (User.IsInRole("TeamMember"))
+            request.AssignedToUserId = userId.Value;
+        var result = await _taskService.SearchByProjectAsync(projectId, request);
+        return Ok(result);
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
@@ -76,7 +101,7 @@ public class TaskController : ControllerBase
 
         try
         {
-            var createdTask = await _taskService.CreateAsync(request);
+            var createdTask = await _taskService.CreateAsync(request, userId.Value);
             return CreatedAtAction(nameof(GetById), new { id = createdTask.Id }, createdTask);
         }
         catch (InvalidOperationException ex)
@@ -106,7 +131,7 @@ public class TaskController : ControllerBase
                 if (task.AssignedToUserId != userId.Value) return Forbid();
                 if (request.Title is not null || request.Description is not null ||
                     request.Priority is not null || request.DueDate is not null ||
-                    request.AssignedToUserId is not null)
+                    request.AssignedToUserId is not null || request.ClearAssignment)
                 {
                     return BadRequest(new { message = "TeamMember yalnızca görev durumunu değiştirebilir." });
                 }
@@ -120,7 +145,7 @@ public class TaskController : ControllerBase
 
                 try
                 {
-                    var statusUpdate = await _taskService.UpdateStatusAsync(id, status);
+                    var statusUpdate = await _taskService.UpdateStatusAsync(id, status, userId.Value);
                     return statusUpdate is null ? NotFound() : Ok(statusUpdate);
                 }
                 catch (InvalidOperationException ex)
@@ -136,7 +161,7 @@ public class TaskController : ControllerBase
 
         try
         {
-            var updatedTask = await _taskService.UpdateAsync(id, request);
+            var updatedTask = await _taskService.UpdateAsync(id, request, GetCurrentUserId());
             return updatedTask is null ? NotFound() : Ok(updatedTask);
         }
         catch (InvalidOperationException ex)
@@ -162,7 +187,7 @@ public class TaskController : ControllerBase
             }
         }
 
-        var deleted = await _taskService.DeleteAsync(id);
+        var deleted = await _taskService.DeleteAsync(id, GetCurrentUserId());
         return deleted ? NoContent() : NotFound();
     }
 
@@ -188,6 +213,15 @@ public class TaskController : ControllerBase
         if (!await CanAccessTaskAsync(task)) return Forbid();
 
         return Ok(await _taskService.GetCommentsAsync(taskId));
+    }
+
+    [HttpGet("{taskId:guid}/activity")]
+    public async Task<IActionResult> GetActivity(Guid taskId)
+    {
+        var task = await _taskService.GetByIdAsync(taskId);
+        if (task is null) return NotFound();
+        if (!await CanAccessTaskAsync(task)) return Forbid();
+        return Ok(await _taskService.GetActivityForTaskAsync(taskId));
     }
 
     [HttpGet("{taskId:guid}/attachments")]

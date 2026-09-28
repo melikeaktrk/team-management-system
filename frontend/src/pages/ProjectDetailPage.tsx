@@ -9,6 +9,7 @@ import type {
   ProjectUpdateRequest,
   TaskItem,
   User,
+  ProjectReport,
 } from '../types';
 import { formatTurkishDate } from '../utils/formatDate';
 
@@ -30,6 +31,7 @@ export function ProjectDetailPage() {
 
   const [project, setProject] =
     useState<Project | null>(null);
+  const [report, setReport] = useState<ProjectReport | null>(null);
 
   const [tasks, setTasks] =
     useState<TaskItem[]>([]);
@@ -80,18 +82,20 @@ export function ProjectDetailPage() {
       setMemberError('');
       setProjectError('');
 
-      const [projectResponse, tasksResponse, membersResponse, availableUsersResponse] = await Promise.all([
+      const [projectResponse, tasksResponse, membersResponse, availableUsersResponse, reportResponse] = await Promise.all([
         projectApi.getById(id),
         taskApi.getByProject(id),
         projectApi.getMembers(id),
         canManageMembers
           ? projectApi.getAvailableUsers(id)
           : Promise.resolve({ data: [] as User[] }),
+        projectApi.getReport(id),
       ]);
 
       setProject(projectResponse.data);
       setTasks(tasksResponse.data);
       setMembers(membersResponse.data);
+      setReport(reportResponse.data);
       setAvailableUsers(
         availableUsersResponse.data
       );
@@ -512,6 +516,24 @@ export function ProjectDetailPage() {
           </form>
         )}
       </section>
+
+      {report && <section className="panel">
+        <div className="panel-header"><h3>Proje raporu</h3><span>{report.completionPercentage}% tamamlandı</span></div>
+        <div className="stats-grid report-stats">
+          <div className="stat-card"><span>Toplam görev</span><strong>{report.totalTasks}</strong></div>
+          <div className="stat-card"><span>Tamamlanan</span><strong>{report.completedTasks}</strong></div>
+          <div className="stat-card"><span>Devam eden</span><strong>{report.inProgressTasks}</strong></div>
+          <div className="stat-card"><span>Geciken</span><strong>{report.overdueTasks}</strong></div>
+        </div>
+        <div className="two-column report-columns">
+          <div><h4>Üyelere göre görev dağılımı</h4>{report.memberTaskDistribution.length === 0 ? <div className="empty-state">Atanmış görev yok.</div> : <ul className="list-group">
+            {report.memberTaskDistribution.map((member) => <li key={member.userId}><strong>{member.userName}</strong><span>{member.openTasks} açık · {member.completedTasks} tamamlandı</span></li>)}
+          </ul>}</div>
+          <div><h4>Son aktiviteler</h4>{report.recentActivities.length === 0 ? <div className="empty-state">Henüz aktivite yok.</div> : <ul className="list-group">
+            {report.recentActivities.map((activity) => <li key={activity.id}><strong>{activity.description || activity.action}</strong><span>{activity.userName || 'Sistem'} · {formatTurkishDate(activity.createdAt)}</span></li>)}
+          </ul>}</div>
+        </div>
+      </section>}
 
       <section className="panel">
         <div className="panel-header">

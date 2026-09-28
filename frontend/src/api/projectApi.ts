@@ -7,6 +7,7 @@ import type {
   ProjectMemberRequest,
   ProjectUpdateRequest,
   User,
+  ProjectReport,
 } from '../types';
 
 export const projectApi = {
@@ -15,6 +16,7 @@ export const projectApi = {
 
   getById: (id: string) =>
     api.get<Project>(`/api/Project/${id}`),
+  getReport: (id: string) => api.get<ProjectReport>(`/api/Project/${id}/report`),
 
   create: (payload: ProjectCreateRequest) =>
     api.post<Project>('/api/Project', payload),
