@@ -71,7 +71,7 @@ public class UserController : ControllerBase
             var createdUser = await _userService.CreateAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = createdUser.Id }, createdUser);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
         }
@@ -88,7 +88,7 @@ public class UserController : ControllerBase
             var user = await _userService.UpdateAsync(id, request);
             return user is null ? NotFound(new { message = "Kullanıcı bulunamadı." }) : Ok(user);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
         }
@@ -105,7 +105,21 @@ public class UserController : ControllerBase
             var user = await _userService.UpdateStatusAsync(id, request.IsActive);
             return user is null ? NotFound(new { message = "Kullanıcı bulunamadı." }) : Ok(user);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("{id:guid}/role")]
+    public async Task<IActionResult> UpdateRole(Guid id, [FromBody] UserRoleUpdateRequest request)
+    {
+        try
+        {
+            var user = await _userService.UpdateRoleAsync(id, request.Role);
+            return user is null ? NotFound(new { message = "Kullanıcı bulunamadı." }) : Ok(user);
+        }
+        catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
         }

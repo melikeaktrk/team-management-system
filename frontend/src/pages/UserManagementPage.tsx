@@ -8,6 +8,7 @@ const emptyForm = {
   password: '',
   firstName: '',
   lastName: '',
+  role: 'TeamMember',
 };
 
 export function UserManagementPage() {
@@ -51,6 +52,16 @@ export function UserManagementPage() {
     } catch (err) {
       console.error(err);
       setError('Durum güncellenemedi.');
+    }
+  };
+
+  const updateRole = async (user: User, role: string) => {
+    try {
+      await userApi.updateRole(user.id, role);
+      await loadUsers();
+    } catch (err) {
+      console.error(err);
+      setError('Kullanıcı rolü güncellenemedi.');
     }
   };
 
@@ -112,6 +123,18 @@ export function UserManagementPage() {
             />
           </label>
 
+          <label>
+            Rol
+            <select
+              value={form.role}
+              onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
+            >
+              <option value="TeamMember">TeamMember</option>
+              <option value="ProjectManager">ProjectManager</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </label>
+
           {error && <div className="error-box">{error}</div>}
 
           <button type="submit">Kullanıcı oluştur</button>
@@ -133,6 +156,17 @@ export function UserManagementPage() {
               </div>
               <div>
                 <span>{user.firstName || 'Ad'} {user.lastName || 'Soyad'}</span>
+              </div>
+              <div>
+                <select
+                  aria-label={`${user.userName} rolü`}
+                  value={user.roles?.[0] ?? 'TeamMember'}
+                  onChange={(e) => void updateRole(user, e.target.value)}
+                >
+                  <option value="TeamMember">TeamMember</option>
+                  <option value="ProjectManager">ProjectManager</option>
+                  <option value="Admin">Admin</option>
+                </select>
               </div>
               <div>
                 <span className={`status-chip ${user.isActive ? '' : 'inactive'}`}>

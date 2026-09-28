@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace TeamTaskManager.DTO.Project;
 
 /// <summary>
@@ -6,7 +8,11 @@ namespace TeamTaskManager.DTO.Project;
 /// </summary>
 public class ProjectCreateRequest
 {
+    [Required]
+    [StringLength(150, MinimumLength = 1)]
+    [RegularExpression(@".*\S.*", ErrorMessage = "Proje adı boş olamaz.")]
     public string Name { get; set; } = string.Empty;
+    [StringLength(2000)]
     public string? Description { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? DueDate { get; set; }

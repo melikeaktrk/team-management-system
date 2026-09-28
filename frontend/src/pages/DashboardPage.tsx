@@ -75,7 +75,7 @@ export function DashboardPage() {
   }
 
   const activeProjectsCount = projects.filter(
-    (p) => p.status === 'Active' || p.status === 'Aktif'
+    (p) => p.status === 'InProgress'
   ).length;
 
   return (
@@ -87,7 +87,7 @@ export function DashboardPage() {
           <strong>{projects.length}</strong>
         </div>
         <div className="stat-card">
-          <span>Aktif Görev / Proje</span>
+          <span>Devam Eden Proje</span>
           <strong>{activeProjectsCount}</strong>
         </div>
         <div className="stat-card">

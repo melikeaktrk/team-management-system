@@ -13,16 +13,22 @@ public interface IUserService
     Task<UserDetailResponse> CreateAsync(UserCreateRequest request);
     Task<UserDetailResponse?> UpdateAsync(Guid id, UserUpdateRequest request);
     Task<UserDetailResponse?> UpdateStatusAsync(Guid id, bool isActive);
+    Task<UserDetailResponse?> UpdateRoleAsync(Guid id, string role);
 }
 
 public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole<Guid>> _roleManager;
     private readonly IMapper _mapper;
 
-    public UserService(UserManager<ApplicationUser> userManager, IMapper mapper)
+    public UserService(
+        UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole<Guid>> roleManager,
+        IMapper mapper)
     {
         _userManager = userManager;
+        _roleManager = roleManager;
         _mapper = mapper;
     }
 
@@ -32,16 +38,23 @@ public class UserService : IUserService
             .OrderBy(u => u.UserName)
             .ToListAsync();
 
-        return users.Select(u => new UserListResponse
+        var responses = new List<UserListResponse>();
+        foreach (var user in users)
         {
-            Id = u.Id,
-            UserName = u.UserName ?? string.Empty,
-            Email = u.Email ?? string.Empty,
-            FirstName = u.FirstName,
-            LastName = u.LastName,
-            IsActive = u.IsActive,
-            CreatedAt = u.CreatedAt
-        });
+            responses.Add(new UserListResponse
+            {
+                Id = user.Id,
+                UserName = user.UserName ?? string.Empty,
+                Email = user.Email ?? string.Empty,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                IsActive = user.IsActive,
+                CreatedAt = user.CreatedAt,
+                Roles = (await _userManager.GetRolesAsync(user)).ToList()
+            });
+        }
+
+        return responses;
     }
 
     public async Task<UserDetailResponse?> GetByIdAsync(Guid id)
@@ -59,7 +72,8 @@ public class UserService : IUserService
             LastName = user.LastName,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
-            LastLoginAt = user.LastLoginAt
+            LastLoginAt = user.LastLoginAt,
+            Roles = (await _userManager.GetRolesAsync(user)).ToList()
         };
     }
 
@@ -73,6 +87,10 @@ public class UserService : IUserService
 
         if (string.IsNullOrWhiteSpace(request.Password))
             throw new InvalidOperationException("Şifre zorunludur.");
+
+        var role = string.IsNullOrWhiteSpace(request.Role) ? "TeamMember" : request.Role;
+        if (!IsSupportedRole(role) || !await _roleManager.RoleExistsAsync(role))
+            throw new InvalidOperationException("Geçersiz kullanıcı rolü.");
 
         var existsByEmail = await _userManager.FindByEmailAsync(request.Email);
         if (existsByEmail is not null)
@@ -100,6 +118,14 @@ public class UserService : IUserService
             throw new InvalidOperationException(errors);
         }
 
+        var roleResult = await _userManager.AddToRoleAsync(user, role);
+        if (!roleResult.Succeeded)
+        {
+            var errors = string.Join("; ", roleResult.Errors.Select(e => e.Description));
+            await _userManager.DeleteAsync(user);
+            throw new InvalidOperationException(errors);
+        }
+
         return new UserDetailResponse
         {
             Id = user.Id,
@@ -109,7 +135,8 @@ public class UserService : IUserService
             LastName = user.LastName,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
-            LastLoginAt = user.LastLoginAt
+            LastLoginAt = user.LastLoginAt,
+            Roles = (await _userManager.GetRolesAsync(user)).ToList()
         };
     }
 
@@ -171,4 +198,44 @@ public class UserService : IUserService
 
         return await GetByIdAsync(user.Id);
     }
+
+    public async Task<UserDetailResponse?> UpdateRoleAsync(Guid id, string role)
+    {
+        if (!IsSupportedRole(role) || !await _roleManager.RoleExistsAsync(role))
+            throw new InvalidOperationException("Geçersiz kullanıcı rolü.");
+
+        var user = await _userManager.FindByIdAsync(id.ToString());
+        if (user is null) return null;
+
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        if (currentRoles.Contains(role, StringComparer.OrdinalIgnoreCase))
+            return await GetByIdAsync(id);
+
+        if (currentRoles.Contains("Admin", StringComparer.OrdinalIgnoreCase))
+        {
+            var admins = await _userManager.GetUsersInRoleAsync("Admin");
+            if (admins.Count <= 1)
+                throw new InvalidOperationException("Son Admin kullanıcısının rolü değiştirilemez.");
+        }
+
+        var addResult = await _userManager.AddToRoleAsync(user, role);
+        if (!addResult.Succeeded)
+            throw new InvalidOperationException(string.Join("; ", addResult.Errors.Select(e => e.Description)));
+
+        var rolesToRemove = currentRoles
+            .Where(currentRole => !string.Equals(currentRole, role, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        if (rolesToRemove.Length > 0)
+        {
+            var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+            if (!removeResult.Succeeded)
+                throw new InvalidOperationException(string.Join("; ", removeResult.Errors.Select(e => e.Description)));
+        }
+
+        return await GetByIdAsync(id);
+    }
+
+    private static bool IsSupportedRole(string role) =>
+        new[] { "Admin", "ProjectManager", "TeamMember" }
+            .Contains(role, StringComparer.OrdinalIgnoreCase);
 }

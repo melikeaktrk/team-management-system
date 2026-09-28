@@ -131,6 +131,16 @@ export type TaskCommentCreateRequest = {
   content: string;
 };
 
+export type TaskAttachment = {
+  id: string;
+  taskItemId: string;
+  originalFileName: string;
+  contentType: string;
+  fileSize: number;
+  uploadedByUserId?: string | null;
+  createdAt: string;
+};
+
 export type NotificationItem = {
   id: string;
   title: string;

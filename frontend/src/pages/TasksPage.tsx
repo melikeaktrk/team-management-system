@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { projectApi } from '../api/projectApi';
 import { taskApi } from '../api/taskApi';
+import { useAuth } from '../features/auth/AuthContext';
 import type { Project, TaskItem, TaskItemCreateRequest } from '../types';
 import { formatTurkishDate } from '../utils/formatDate';
 
@@ -15,6 +16,10 @@ const defaultForm: TaskItemCreateRequest = {
 };
 
 export function TasksPage() {
+  const { user } = useAuth();
+  const canCreateTasks = user?.roles.some(
+    (role) => role === 'Admin' || role === 'ProjectManager'
+  ) ?? false;
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [form, setForm] = useState<TaskItemCreateRequest>(defaultForm);
@@ -71,7 +76,7 @@ export function TasksPage() {
 
   return (
     <div className="page-stack">
-      <section className="panel">
+      {canCreateTasks && <section className="panel">
         <div className="panel-header">
           <h3>Yeni görev</h3>
         </div>
@@ -135,7 +140,7 @@ export function TasksPage() {
 
           <button type="submit">Görev ekle</button>
         </form>
-      </section>
+      </section>}
 
       <section className="panel">
         <div className="panel-header">

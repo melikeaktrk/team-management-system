@@ -17,3 +17,8 @@ C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DataAcces
 C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DataAccess\obj\Debug\net8.0\TeamTaskManager.DataAccess.pdb
 C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DataAccess\obj\Debug\net8.0\TeamTaskManager.DataAccess.genruntimeconfig.cache
 C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DataAccess\obj\Debug\net8.0\ref\TeamTaskManager.DataAccess.dll
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.DataAccess\obj\Debug\net8.0\TeamTaskManager.DataAccess.sourcelink.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.DataAccess.deps.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.DataAccess.runtimeconfig.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.DataAccess.dll
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.DataAccess.pdb

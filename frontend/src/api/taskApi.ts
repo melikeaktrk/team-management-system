@@ -1,6 +1,7 @@
 import { api } from './client';
 import type {
   TaskCommentCreateRequest,
+  TaskAttachment,
   TaskItem,
   TaskItemCreateRequest,
   TaskItemUpdateRequest,
@@ -16,4 +17,19 @@ export const taskApi = {
   remove: (id: string) => api.delete(`/api/Task/${id}`),
   addComment: (taskId: string, payload: TaskCommentCreateRequest) =>
     api.post(`/api/Task/${taskId}/comments`, payload),
+  getComments: (taskId: string) =>
+    api.get<{ id: string; taskItemId: string; userId: string; content: string; createdAt: string }[]>(
+      `/api/Task/${taskId}/comments`
+    ),
+  getAttachments: (taskId: string) =>
+    api.get<TaskAttachment[]>(`/api/Task/${taskId}/attachments`),
+  uploadAttachment: (taskId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<TaskAttachment>(`/api/Task/${taskId}/attachments`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  downloadAttachment: (attachmentId: string) =>
+    api.get<Blob>(`/api/Task/attachments/${attachmentId}`, { responseType: 'blob' }),
 };

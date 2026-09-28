@@ -14,4 +14,6 @@ export const userApi = {
   update: (id: string, payload: UserUpdateRequest) => api.put<User>(`/User/${id}`, payload),
   updateStatus: (id: string, payload: UserStatusUpdateRequest) =>
     api.patch<User>(`/User/${id}/status`, payload),
+  updateRole: (id: string, role: string) =>
+    api.put<User>(`/User/${id}/role`, { role }),
 };

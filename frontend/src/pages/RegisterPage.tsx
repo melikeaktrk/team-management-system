@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../api/authApi';
+import { useAuth } from '../features/auth/AuthContext';
 import type { RegisterRequest } from '../types';
 
 const initialValues: RegisterRequest = {
@@ -13,6 +14,7 @@ const initialValues: RegisterRequest = {
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [form, setForm] = useState<RegisterRequest>(initialValues);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -27,9 +29,8 @@ export function RegisterPage() {
     setError(null);
 
     try {
-      const response = await authApi.register(form);
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('username', response.data.userName || form.userName || form.email);
+      await authApi.register(form);
+      await login(form.email, form.password);
       navigate('/');
     } catch (err: unknown) {
       const message =

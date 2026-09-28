@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { projectApi } from '../api/projectApi';
 import { taskApi } from '../api/taskApi';
+import { useAuth } from '../features/auth/AuthContext';
 import type {
   Project,
   ProjectMember,
@@ -22,6 +23,10 @@ const emptyUpdateForm: ProjectUpdateRequest = {
 export function ProjectDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canManageMembers = user?.roles.some(
+    (role) => role === 'Admin' || role === 'ProjectManager'
+  ) ?? false;
 
   const [project, setProject] =
     useState<Project | null>(null);
@@ -75,16 +80,13 @@ export function ProjectDetailPage() {
       setMemberError('');
       setProjectError('');
 
-      const [
-        projectResponse,
-        tasksResponse,
-        membersResponse,
-        availableUsersResponse,
-      ] = await Promise.all([
+      const [projectResponse, tasksResponse, membersResponse, availableUsersResponse] = await Promise.all([
         projectApi.getById(id),
         taskApi.getByProject(id),
         projectApi.getMembers(id),
-        projectApi.getAvailableUsers(id),
+        canManageMembers
+          ? projectApi.getAvailableUsers(id)
+          : Promise.resolve({ data: [] as User[] }),
       ]);
 
       setProject(projectResponse.data);
@@ -106,7 +108,7 @@ export function ProjectDetailPage() {
 
   useEffect(() => {
     void loadData();
-  }, [id]);
+  }, [id, canManageMembers]);
 
   const handleAddMember = async () => {
     if (!id) return;
@@ -127,12 +129,11 @@ export function ProjectDetailPage() {
         role: newMemberRole,
       });
 
-      const [
-        membersResponse,
-        availableUsersResponse,
-      ] = await Promise.all([
+      const [membersResponse, availableUsersResponse] = await Promise.all([
         projectApi.getMembers(id),
-        projectApi.getAvailableUsers(id),
+        canManageMembers
+          ? projectApi.getAvailableUsers(id)
+          : Promise.resolve({ data: [] as User[] }),
       ]);
 
       setMembers(membersResponse.data);
@@ -319,7 +320,7 @@ export function ProjectDetailPage() {
             </div>
           </div>
 
-          <div
+          {canManageMembers && <div
             style={{
               display: 'flex',
               gap: '10px',
@@ -343,7 +344,7 @@ export function ProjectDetailPage() {
             >
               Sil
             </button>
-          </div>
+          </div>}
         </div>
 
         <p>
@@ -363,7 +364,7 @@ export function ProjectDetailPage() {
           </div>
         )}
 
-        {editing && (
+        {editing && canManageMembers && (
           <form
             onSubmit={handleUpdate}
             className="form-grid"
@@ -548,7 +549,7 @@ export function ProjectDetailPage() {
           )}
         </div>
 
-        <div
+        {canManageMembers && <div
           style={{
             marginTop: '20px',
           }}
@@ -652,7 +653,7 @@ export function ProjectDetailPage() {
               {memberError}
             </p>
           )}
-        </div>
+        </div>}
       </section>
 
       <section className="panel">

@@ -58,6 +58,13 @@ public class AuthService : IAuthService
             throw new InvalidOperationException(errors);
         }
 
+        var roleResult = await _userManager.AddToRoleAsync(user, "TeamMember");
+        if (!roleResult.Succeeded)
+        {
+            await _userManager.DeleteAsync(user);
+            throw new InvalidOperationException(string.Join("; ", roleResult.Errors.Select(e => e.Description)));
+        }
+
         var token = await GenerateJwtTokenAsync(user);
         return new AuthResponse
         {
@@ -124,9 +131,13 @@ public class AuthService : IAuthService
 
     private async Task<string> GenerateJwtTokenAsync(ApplicationUser user)
     {
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "TeamTaskManagerVeryStrongSecretKey1234567890");
-        var issuer = _configuration["Jwt:Issuer"] ?? "TeamTaskManagerAPI";
-        var audience = _configuration["Jwt:Audience"] ?? "TeamTaskManagerClient";
+        var keyValue = _configuration["Jwt:Key"]
+            ?? throw new InvalidOperationException("JWT imza anahtarı yapılandırılmamış.");
+        var key = Encoding.UTF8.GetBytes(keyValue);
+        var issuer = _configuration["Jwt:Issuer"]
+            ?? throw new InvalidOperationException("JWT issuer yapılandırılmamış.");
+        var audience = _configuration["Jwt:Audience"]
+            ?? throw new InvalidOperationException("JWT audience yapılandırılmamış.");
 
         var roles = (await _userManager.GetRolesAsync(user))
             .Distinct(StringComparer.OrdinalIgnoreCase)

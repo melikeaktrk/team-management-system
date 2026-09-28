@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TeamTaskManager.Business.Services;
 
 namespace TeamTaskManager.API.Controllers;
@@ -9,16 +10,20 @@ namespace TeamTaskManager.API.Controllers;
 [Authorize]
 public class NotificationController : ControllerBase
 {
-    public NotificationController()
+    private readonly INotificationService _notificationService;
+
+    public NotificationController(INotificationService notificationService)
     {
+        _notificationService = notificationService;
     }
 
     [HttpGet]
-    public IActionResult GetNotifications()
+    public async Task<IActionResult> GetNotifications()
     {
-        return Ok(new[]
-        {
-            new { id = Guid.NewGuid(), title = "Welcome", message = "Sisteme hoş geldiniz." }
-        });
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User.FindFirstValue("nameid");
+        if (!Guid.TryParse(claim, out var userId)) return Unauthorized();
+
+        return Ok(await _notificationService.GetForUserAsync(userId));
     }
 }

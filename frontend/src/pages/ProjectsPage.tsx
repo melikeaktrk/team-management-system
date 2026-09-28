@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { projectApi } from '../api/projectApi';
+import { useAuth } from '../features/auth/AuthContext';
 import type {
   Project,
   ProjectCreateRequest,
@@ -24,6 +25,10 @@ const emptyUpdateForm: ProjectUpdateRequest = {
 };
 
 export function ProjectsPage() {
+  const { user } = useAuth();
+  const canManageProjects = user?.roles.some(
+    (role) => role === 'Admin' || role === 'ProjectManager'
+  ) ?? false;
   const [projects, setProjects] = useState<Project[]>([]);
 
   const [form, setForm] =
@@ -231,6 +236,7 @@ export function ProjectsPage() {
 
   return (
     <div className="page-stack">
+      {canManageProjects && (
       <section className="panel">
         <div className="panel-header">
           <h3>Yeni proje</h3>
@@ -333,6 +339,7 @@ export function ProjectsPage() {
           </button>
         </form>
       </section>
+      )}
 
       <section className="panel">
         <div className="panel-header">
@@ -346,7 +353,7 @@ export function ProjectsPage() {
             </div>
           ) : (
             projects.map((project) => {
-              const isEditing =
+              const isEditing = canManageProjects &&
                 editingProjectId ===
                 project.id;
 
@@ -398,7 +405,7 @@ export function ProjectsPage() {
                           </button>
                         </Link>
 
-                        <button
+                        {canManageProjects && <button
                           type="button"
                           onClick={() =>
                             handleEditStart(
@@ -407,9 +414,9 @@ export function ProjectsPage() {
                           }
                         >
                           Düzenle
-                        </button>
+                        </button>}
 
-                        <button
+                        {canManageProjects && <button
                           type="button"
                           onClick={() =>
                             void handleDelete(
@@ -425,7 +432,7 @@ export function ProjectsPage() {
                           project.id
                             ? 'Siliniyor...'
                             : 'Sil'}
-                        </button>
+                        </button>}
                       </div>
                     </>
                   ) : (

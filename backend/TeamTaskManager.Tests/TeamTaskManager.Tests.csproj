@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TeamTaskManager.API\TeamTaskManager.API.csproj" />
     <ProjectReference Include="..\TeamTaskManager.DTO\TeamTaskManager.DTO.csproj" />
     <ProjectReference Include="..\TeamTaskManager.Entities\TeamTaskManager.Entities.csproj" />
     <ProjectReference Include="..\TeamTaskManager.Business\TeamTaskManager.Business.csproj" />

@@ -25,7 +25,7 @@ public class AuthController : ControllerBase
             var response = await _authService.RegisterAsync(request);
             return Ok(response);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
         }
@@ -39,7 +39,7 @@ public class AuthController : ControllerBase
             var response = await _authService.LoginAsync(request);
             return Ok(response);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is InvalidOperationException or UnauthorizedAccessException)
         {
             return BadRequest(new { message = ex.Message });
         }
@@ -84,7 +84,7 @@ public class AuthController : ControllerBase
             await _authService.ChangePasswordAsync(userId, request.CurrentPassword, request.NewPassword);
             return Ok(new { message = "Şifre başarıyla değiştirildi." });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
         }

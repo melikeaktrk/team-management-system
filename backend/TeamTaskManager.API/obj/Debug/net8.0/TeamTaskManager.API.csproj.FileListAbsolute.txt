@@ -183,3 +183,15 @@ C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.API\bin\D
 C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
 C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
 C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.API\obj\Debug\net8.0\TeamTaskManager.API.sourcelink.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\appsettings.Development.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\appsettings.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\bin\Debug\net8.0\appsettings.Development.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\bin\Debug\net8.0\appsettings.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\bin\Debug\net8.0\TeamTaskManager.API.deps.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\bin\Debug\net8.0\TeamTaskManager.API.runtimeconfig.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.API.exe
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.API.deps.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.API.runtimeconfig.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.API.dll
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.API.pdb

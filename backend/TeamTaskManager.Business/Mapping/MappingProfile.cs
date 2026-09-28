@@ -56,9 +56,11 @@ public class MappingProfile : Profile
         CreateMap<TaskItemCreateRequest, TaskItem>()
             .ForMember(
                 dest => dest.Status,
-                opt => opt.MapFrom(_ => "ToDo"));
+                opt => opt.MapFrom(_ => "New"));
 
-        CreateMap<TaskItemUpdateRequest, TaskItem>();
+        CreateMap<TaskItemUpdateRequest, TaskItem>()
+            .ForMember(dest => dest.Status, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Status)))
+            .ForMember(dest => dest.Priority, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Priority)));
 
         CreateMap<TaskItem, TaskItemResponse>();
 

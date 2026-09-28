@@ -104,6 +104,11 @@ public async Task<IActionResult> GetById(Guid id)
     public async Task<IActionResult> Create(
         [FromBody] ProjectCreateRequest request)
     {
+        if (!User.IsInRole("Admin") && !User.IsInRole("ProjectManager"))
+        {
+            return Forbid();
+        }
+
         var userId = GetCurrentUserId();
 
         if (userId is null)
@@ -289,11 +294,41 @@ public async Task<IActionResult> GetAvailableUsers(
     public async Task<IActionResult> GetMembers(
         Guid projectId)
     {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+        {
+            return Unauthorized(
+                "Kullanıcı kimliği JWT üzerinden alınamadı.");
+        }
+
+        var project = await _projectService.GetByIdAsync(projectId);
+        if (project is null)
+        {
+            return NotFound();
+        }
+
+        if (User.IsInRole("Admin"))
+        {
+            return Ok(await _projectService.GetMembersAsync(projectId));
+        }
+
+        if (User.IsInRole("ProjectManager"))
+        {
+            if (!await _projectService.IsManagerAsync(projectId, userId.Value))
+            {
+                return Forbid();
+            }
+
+            return Ok(await _projectService.GetMembersAsync(projectId));
+        }
+
         var members =
             await _projectService.GetMembersAsync(
                 projectId);
 
-        return Ok(members);
+        return members.Any(member => member.UserId == userId.Value)
+            ? Ok(members)
+            : Forbid();
     }
 [HttpPost("{projectId:guid}/members")]
 public async Task<IActionResult> AddMember(

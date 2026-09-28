@@ -8,6 +8,7 @@ public interface IUnitOfWork : IDisposable
     IRepository<Project> Projects { get; }
     IRepository<TaskItem> Tasks { get; }
     IRepository<TaskComment> TaskComments { get; }
+    IRepository<TaskAttachment> TaskAttachments { get; }
     IRepository<ProjectMember> ProjectMembers { get; }
     IRepository<Notification> Notifications { get; }
     IRepository<ActivityLog> ActivityLogs { get; }

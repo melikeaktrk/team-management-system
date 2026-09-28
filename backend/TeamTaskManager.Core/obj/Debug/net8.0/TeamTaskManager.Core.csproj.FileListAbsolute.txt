@@ -9,3 +9,7 @@ C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Core\obj\
 C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Core\obj\Debug\net8.0\refint\TeamTaskManager.Core.dll
 C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Core\obj\Debug\net8.0\TeamTaskManager.Core.pdb
 C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Core\obj\Debug\net8.0\ref\TeamTaskManager.Core.dll
+C:\Users\melike\Desktop\team-management-system\backend\TeamTaskManager.Core\obj\Debug\net8.0\TeamTaskManager.Core.sourcelink.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.Core.deps.json
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.Core.dll
+C:\Users\melike\.codex\visualizations\2026\09\28\01a0e6c5-f1a8-7633-9a5d-2e48ff9f51e1\backend-build\Debug\net8.0\TeamTaskManager.Core.pdb

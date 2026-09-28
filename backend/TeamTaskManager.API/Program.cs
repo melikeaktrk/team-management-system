@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -24,15 +25,23 @@ static async Task SeedRolesAsync(IServiceProvider services)
     }
 }
 
-static async Task SeedDefaultUsersAsync(IServiceProvider services)
+static async Task SeedDefaultUsersAsync(IServiceProvider services, IConfiguration configuration)
 {
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var email = configuration["SeedAdmin:Email"];
+    var userName = configuration["SeedAdmin:UserName"];
+    var password = configuration["SeedAdmin:Password"];
+    if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(userName) ||
+        string.IsNullOrWhiteSpace(password))
+    {
+        return;
+    }
 
     var userSeed = new
     {
-        UserName = "admin",
-        Email = "admin@test.com",
-        Password = "Admin123!",
+        UserName = userName,
+        Email = email,
+        Password = password,
         FirstName = "Admin",
         LastName = "User"
     };
@@ -82,6 +91,10 @@ builder.Services.AddCors(options =>
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("DefaultConnection yapılandırılmalıdır.");
+}
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -98,7 +111,15 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
     .AddDefaultTokenProviders();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? "TeamTaskManagerVeryStrongSecretKey1234567890");
+var jwtKey = jwtSettings["Key"];
+var jwtIssuer = jwtSettings["Issuer"];
+var jwtAudience = jwtSettings["Audience"];
+if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32 ||
+    string.IsNullOrWhiteSpace(jwtIssuer) || string.IsNullOrWhiteSpace(jwtAudience))
+{
+    throw new InvalidOperationException("JWT Key (en az 32 byte), Issuer ve Audience yapılandırılmalıdır.");
+}
+var key = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -114,8 +135,8 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ClockSkew = TimeSpan.FromMinutes(2),
         NameClaimType = ClaimTypes.Name,
@@ -132,6 +153,33 @@ builder.Services.AddAuthentication(options =>
             }
 
             return Task.CompletedTask;
+        },
+        OnTokenValidated = async context =>
+        {
+            var userIdValue = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? context.Principal?.FindFirstValue("nameid");
+            if (!Guid.TryParse(userIdValue, out var userId))
+            {
+                context.Fail("Token kullanıcı kimliği içermiyor.");
+                return;
+            }
+
+            var userManager = context.HttpContext.RequestServices
+                .GetRequiredService<UserManager<ApplicationUser>>();
+            var user = await userManager.FindByIdAsync(userId.ToString());
+            if (user is null || !user.IsActive)
+            {
+                context.Fail("Kullanıcı hesabı etkin değil.");
+                return;
+            }
+
+            var tokenRoles = context.Principal!.FindAll("role")
+                .Select(claim => claim.Value)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var currentRoles = (await userManager.GetRolesAsync(user))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            if (!tokenRoles.SetEquals(currentRoles))
+                context.Fail("Kullanıcı rol bilgisi değişmiş; yeniden giriş yapılmalıdır.");
         }
     };
 });
@@ -142,6 +190,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ITaskAttachmentService, TaskAttachmentService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
@@ -183,12 +233,27 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+{
+    var logger = context.RequestServices
+        .GetRequiredService<ILoggerFactory>()
+        .CreateLogger("GlobalExceptionHandler");
+    var exception = context.Features.Get<IExceptionHandlerPathFeature>()?.Error;
+    logger.LogError(exception, "Unhandled API exception for {Path}", context.Request.Path);
+
+    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+    await context.Response.WriteAsJsonAsync(new
+    {
+        message = "Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin."
+    });
+}));
+
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dbContext.Database.Migrate();
     await SeedRolesAsync(scope.ServiceProvider);
-    await SeedDefaultUsersAsync(scope.ServiceProvider);
+    await SeedDefaultUsersAsync(scope.ServiceProvider, app.Configuration);
 }
 
 if (app.Environment.IsDevelopment())
