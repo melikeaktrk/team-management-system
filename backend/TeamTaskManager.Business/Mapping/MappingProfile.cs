@@ -8,10 +8,12 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.Business.Mapping;
 
+// AutoMapper'ın istek DTO'ları, veritabanı entity'leri ve yanıt DTO'ları arasındaki kuralları.
 public class MappingProfile : Profile
 {
     public MappingProfile()
     {
+        // Kayıt isteğindeki temel alanları Identity kullanıcısına taşır.
         CreateMap<RegisterRequest, ApplicationUser>()
             .ForMember(
                 dest => dest.UserName,
@@ -23,7 +25,7 @@ public class MappingProfile : Profile
         CreateMap<UserCreateRequest, ApplicationUser>();
         CreateMap<UserUpdateRequest, ApplicationUser>();
 
-        // PROJECT CREATE
+        // Proje oluşturma/güncelleme alan adlarını entity alanlarına eşler.
         CreateMap<ProjectCreateRequest, Project>()
             .ForMember(
                 dest => dest.Status,
@@ -38,13 +40,13 @@ public class MappingProfile : Profile
                 dest => dest.TargetEndDate,
                 opt => opt.MapFrom(src => src.DueDate));
 
-        // PROJECT RESPONSE
+        // Entity durumunu ve hedef bitiş tarihini API yanıt modeline eşler.
         CreateMap<Project, ProjectResponse>()
             .ForMember(
                 dest => dest.DueDate,
                 opt => opt.MapFrom(src => src.TargetEndDate));
 
-        // PROJECT MEMBER
+        // Üyelik isteğinde rol yoksa varsayılan üye rolünü kullanır.
         CreateMap<ProjectMemberRequest, ProjectMember>()
             .ForMember(
                 dest => dest.Role,
@@ -52,7 +54,7 @@ public class MappingProfile : Profile
 
         CreateMap<ProjectMember, ProjectMemberResponse>();
 
-        // TASK
+        // Görevlerde varsayılan başlangıç durumu ve kısmi güncelleme eşlemesi.
         CreateMap<TaskItemCreateRequest, TaskItem>()
             .ForMember(
                 dest => dest.Status,
@@ -68,11 +70,11 @@ public class MappingProfile : Profile
 
         CreateMap<TaskItem, TaskItemResponse>();
 
-        // COMMENTS
+        // Yorum oluşturma ve yanıt dönüşüm kuralları.
         CreateMap<TaskCommentCreateRequest, TaskComment>();
         CreateMap<TaskComment, TaskCommentResponse>();
 
-        // NOTIFICATIONS
+        // Bildirim entity'sini dışarıya gönderilecek yanıta dönüştürür.
         CreateMap<Notification, NotificationResponse>();
     }
 }

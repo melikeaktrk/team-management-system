@@ -12,6 +12,7 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.Business.Services;
 
+// API controller'ın kullandığı kimlik doğrulama işlemlerinin sözleşmesi.
 public interface IAuthService
 {
     Task<AuthResponse> RegisterAsync(RegisterRequest request);
@@ -19,6 +20,7 @@ public interface IAuthService
     Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword);
 }
 
+// Identity üzerinden hesap işlemlerini yürütür ve girişte imzalı JWT üretir.
 public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -41,6 +43,7 @@ public class AuthService : IAuthService
         _unitOfWork = unitOfWork;
     }
 
+    // Kaydı oluşturur, varsayılan TeamMember rolünü verir ve yeni token döndürür.
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
@@ -75,6 +78,7 @@ public class AuthService : IAuthService
         };
     }
 
+    // E-posta/kullanıcı adıyla hesabı bulur, etkinlik ve parola kontrolü yapar.
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
         var loginKey = string.IsNullOrWhiteSpace(request.Email)
@@ -107,6 +111,7 @@ public class AuthService : IAuthService
         };
     }
 
+    // Mevcut hesabın parolasını Identity parola kurallarını kullanarak değiştirir.
     public async Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword)
     {
         if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
@@ -129,6 +134,7 @@ public class AuthService : IAuthService
         return true;
     }
 
+    // Kullanıcı kimliği, e-posta ve rol claim'lerini iki saatlik imzalı tokene yazar.
     private async Task<string> GenerateJwtTokenAsync(ApplicationUser user)
     {
         var keyValue = _configuration["Jwt:Key"]

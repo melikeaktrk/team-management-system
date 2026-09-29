@@ -3,6 +3,7 @@ using TeamTaskManager.Core;
 
 namespace TeamTaskManager.Entities;
 
+// Proje görevi; durum, öncelik, atanan/oluşturan kullanıcı ve tarihleri taşır.
 public class TaskItem : BaseEntity
 {
     public Guid ProjectId { get; set; }
@@ -29,6 +30,7 @@ public class TaskItem : BaseEntity
     public ICollection<TaskComment> Comments { get; set; } = new List<TaskComment>();
     public ICollection<TaskAttachment> Attachments { get; set; } = new List<TaskAttachment>();
 
+    // Eski string sütun/API kullanımları için enum alanlarına dönüştürülen uyumluluk özellikleri.
     [Obsolete("Use Status instead.")]
     public string LegacyStatus
     {

@@ -6,6 +6,7 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.Business.Services;
 
+// API'nin görev, yorum, aktivite ve rapor işlemleri için kullandığı servis sözleşmesi.
 public interface ITaskService
 {
     Task<IEnumerable<TaskItemResponse>> GetByProjectAsync(Guid projectId);
@@ -29,6 +30,7 @@ public interface ITaskService
     Task<ProjectReportResponse?> GetProjectReportAsync(Guid projectId) => Task.FromResult<ProjectReportResponse?>(null);
 }
 
+// Görev iş kurallarını, ilişkili aktivite/bildirim üretimini ve DTO eşlemesini yürütür.
 public class TaskService : ITaskService
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -40,12 +42,14 @@ public class TaskService : ITaskService
         _mapper = mapper;
     }
 
+    // Projeye bağlı görevleri getirip istemci yanıt modeline dönüştürür.
     public async Task<IEnumerable<TaskItemResponse>> GetByProjectAsync(Guid projectId)
     {
         var tasks = (await _unitOfWork.Tasks.GetAllAsync()).Where(task => task.ProjectId == projectId).ToList();
         return _mapper.Map<IEnumerable<TaskItemResponse>>(tasks);
     }
 
+    // İsteğe göre durum/öncelik/atanan/tarih filtreleri ve sıralama/sayfalama uygular.
     public async Task<PagedResponse<TaskItemResponse>> SearchByProjectAsync(Guid projectId, TaskSearchRequest request)
     {
         IEnumerable<TaskItem> query = (await _unitOfWork.Tasks.GetAllAsync()).Where(task => task.ProjectId == projectId);
@@ -82,12 +86,14 @@ public class TaskService : ITaskService
         };
     }
 
+    // Tek görevi bulur ve yanıt DTO'suna dönüştürür.
     public async Task<TaskItemResponse?> GetByIdAsync(Guid id)
     {
         var task = await _unitOfWork.Tasks.GetByIdAsync(id);
         return task is null ? null : _mapper.Map<TaskItemResponse>(task);
     }
 
+    // Proje/durum/tarih/atama kurallarını doğrular, görevi ve ilgili kayıtları oluşturur.
     public async Task<TaskItemResponse> CreateAsync(TaskItemCreateRequest request, Guid? actorUserId)
     {
         if (!Enum.TryParse<TaskPriority>(request.Priority, true, out var priority) || !Enum.IsDefined(priority))
@@ -115,6 +121,7 @@ public class TaskService : ITaskService
 
     public Task<TaskItemResponse> CreateAsync(TaskItemCreateRequest request) => CreateAsync(request, null);
 
+    // Değişen alanları ve durum geçişini doğrular; atama, aktivite ve bildirimleri kaydeder.
     public async Task<TaskItemResponse?> UpdateAsync(Guid id, TaskItemUpdateRequest request, Guid? actorUserId)
     {
         var task = await _unitOfWork.Tasks.GetByIdAsync(id);
@@ -181,6 +188,7 @@ public class TaskService : ITaskService
 
     public Task<TaskItemResponse?> UpdateAsync(Guid id, TaskItemUpdateRequest request) => UpdateAsync(id, request, null);
 
+    // Yalnızca geçerli durum geçişini uygular ve görev tamamlanma tarihini tutarlı kılar.
     public async Task<TaskItemResponse?> UpdateStatusAsync(Guid id, TeamTaskManager.Entities.TaskStatus status, Guid? actorUserId)
     {
         var task = await _unitOfWork.Tasks.GetByIdAsync(id);
@@ -203,6 +211,7 @@ public class TaskService : ITaskService
 
     public Task<TaskItemResponse?> UpdateStatusAsync(Guid id, TeamTaskManager.Entities.TaskStatus status) => UpdateStatusAsync(id, status, null);
 
+    // Görev ve ona bağlı kayıtlara ait silme/aktivite davranışını yürütür.
     public async Task<bool> DeleteAsync(Guid id, Guid? actorUserId)
     {
         var task = await _unitOfWork.Tasks.GetByIdAsync(id);
@@ -215,12 +224,14 @@ public class TaskService : ITaskService
 
     public Task<bool> DeleteAsync(Guid id) => DeleteAsync(id, null);
 
+    // Görev yorumlarını oluşturulma zamanına göre sıralayarak döndürür.
     public async Task<IEnumerable<TaskCommentResponse>> GetCommentsAsync(Guid taskId)
     {
         var comments = (await _unitOfWork.TaskComments.GetAllAsync()).Where(comment => comment.TaskItemId == taskId).OrderBy(comment => comment.CreatedAt).ToList();
         return _mapper.Map<IEnumerable<TaskCommentResponse>>(comments);
     }
 
+    // Yorum entity'sini oluşturup kaydeder ve yanıt DTO'sunu döndürür.
     public async Task<TaskCommentResponse> AddCommentAsync(Guid taskId, Guid userId, TaskCommentCreateRequest request)
     {
         var task = await _unitOfWork.Tasks.GetByIdAsync(taskId);
@@ -234,6 +245,7 @@ public class TaskService : ITaskService
         return _mapper.Map<TaskCommentResponse>(comment);
     }
 
+    // Göreve ait aktivite kayıtlarını kullanıcı adlarıyla yanıt listesine çevirir.
     public async Task<IEnumerable<TaskActivityResponse>> GetActivityForTaskAsync(Guid taskId)
     {
         var logs = (await _unitOfWork.ActivityLogs.GetAllAsync())
@@ -243,6 +255,7 @@ public class TaskService : ITaskService
         return logs.Select(log => ToActivityResponse(log, users));
     }
 
+    // Proje görev sayılarını, gecikmeleri, üye dağılımını ve son aktiviteleri hesaplar.
     public async Task<ProjectReportResponse?> GetProjectReportAsync(Guid projectId)
     {
         var project = await _unitOfWork.Projects.GetByIdAsync(projectId);
@@ -277,6 +290,7 @@ public class TaskService : ITaskService
         };
     }
 
+    // Atanan hesabın aktif ve aynı projenin aktif üyesi olduğunu doğrular.
     private async Task ValidateAssigneeAsync(Guid projectId, Guid? assigneeId)
     {
         if (!assigneeId.HasValue) return;
@@ -288,6 +302,7 @@ public class TaskService : ITaskService
             throw new InvalidOperationException("Görev yalnızca ilgili projenin aktif üyelerinden birine atanabilir.");
     }
 
+    // Görev üzerinde gerçekleşen işlemi aktivite tablosuna ekler.
     private async Task AddActivityAsync(Guid? actorUserId, Guid taskId, string action, string description)
     {
         await _unitOfWork.ActivityLogs.AddAsync(new ActivityLog
@@ -300,6 +315,7 @@ public class TaskService : ITaskService
         });
     }
 
+    // Görevle ilişkili bildirimi seçilen kullanıcı için hazırlar.
     private async Task AddNotificationAsync(Guid userId, string title, string message, Guid taskId)
     {
         await _unitOfWork.Notifications.AddAsync(new Notification
@@ -312,6 +328,7 @@ public class TaskService : ITaskService
         });
     }
 
+    // Durum değişikliğini yapan kişi hariç ilgili yönetici ve atanan kullanıcıyı bilgilendirir.
     private async Task NotifyTaskStatusChangedAsync(TaskItem task, Guid? actorUserId)
     {
         var project = await _unitOfWork.Projects.GetByIdAsync(task.ProjectId);
@@ -324,6 +341,7 @@ public class TaskService : ITaskService
             await AddNotificationAsync(recipientId, "Görev durumu güncellendi", $"'{task.Title}' görevinin durumu {task.Status} oldu.", task.Id);
     }
 
+    // Aktivite kaydını, varsa kullanıcı adıyla birlikte API yanıtına dönüştürür.
     private static TaskActivityResponse ToActivityResponse(ActivityLog log, IReadOnlyDictionary<Guid, ApplicationUser> users) => new()
     {
         Id = log.Id,

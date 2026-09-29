@@ -11,6 +11,7 @@ using TeamTaskManager.DataAccess;
 
 namespace TeamTaskManager.DataAccess.Migrations
 {
+    // EF Core tarafından üretilen migration hedef modelinin metadata'sı; elle şema kuralı eklenmez.
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20260925064658_CleanSqlServerSchema")]
     partial class CleanSqlServerSchema

@@ -8,6 +8,7 @@ namespace TeamTaskManager.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+// Kayıt, giriş, oturum bilgisini görme ve parola değiştirme HTTP uçları.
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -17,6 +18,7 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    // Yeni hesabı iş katmanında oluşturur; doğrulama hatasını 400 olarak döndürür.
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -31,6 +33,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    // E-posta/kullanıcı adı ve parolayla oturum açıp JWT yanıtı döndürür.
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -45,6 +48,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    // Geçerli token içindeki kullanıcı adı, e-posta ve rolleri döndürür.
     [Authorize]
     [HttpGet("me")]
     public IActionResult GetMe()
@@ -69,6 +73,7 @@ public class AuthController : ControllerBase
         });
     }
 
+    // Token sahibinin mevcut parolasını doğrulayıp yeni parolayı Identity'ye kaydeder.
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)

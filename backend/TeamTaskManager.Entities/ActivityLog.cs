@@ -2,6 +2,7 @@ using TeamTaskManager.Core;
 
 namespace TeamTaskManager.Entities;
 
+// Görev gibi kayıtlar üzerinde yapılan işlemin kim, ne zaman ve ne yaptığını saklar.
 public class ActivityLog : BaseEntity
 {
     public Guid? UserId { get; set; }

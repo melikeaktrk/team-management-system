@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 import { projectApi } from '../api/projectApi';
 import { useAuth } from '../features/auth/AuthContext';
 import type {
@@ -50,6 +51,12 @@ export function ProjectsPage() {
     useState(false);
 
   const [deletingProjectId, setDeletingProjectId] =
+    useState<string | null>(null);
+
+  const [projectToDelete, setProjectToDelete] =
+    useState<Project | null>(null);
+
+  const [deleteError, setDeleteError] =
     useState<string | null>(null);
 
   const loadProjects = async () => {
@@ -194,22 +201,15 @@ export function ProjectsPage() {
     }
   };
 
-  const handleDelete = async (
-    project: Project
-  ) => {
-    const confirmed =
-      window.confirm(
-        `"${project.name}" projesini silmek istediğinize emin misiniz?`
-      );
-
-    if (!confirmed) {
-      return;
-    }
+  const handleDelete = async () => {
+    if (!projectToDelete) return;
+    const project = projectToDelete;
 
     try {
       setDeletingProjectId(project.id);
       setError(null);
       setSuccess(null);
+      setDeleteError(null);
 
       await projectApi.remove(project.id);
 
@@ -223,12 +223,10 @@ export function ProjectsPage() {
       setSuccess(
         'Proje başarıyla silindi.'
       );
+      setProjectToDelete(null);
     } catch (err) {
       console.error(err);
-
-      setError(
-        'Proje silinemedi.'
-      );
+      setDeleteError('Proje silinemedi. Lütfen tekrar deneyin.');
     } finally {
       setDeletingProjectId(null);
     }
@@ -418,11 +416,10 @@ export function ProjectsPage() {
 
                         {canManageProjects && <button
                           type="button"
-                          onClick={() =>
-                            void handleDelete(
-                              project
-                            )
-                          }
+                          onClick={() => {
+                            setDeleteError(null);
+                            setProjectToDelete(project);
+                          }}
                           disabled={
                             deletingProjectId ===
                             project.id
@@ -622,6 +619,18 @@ export function ProjectsPage() {
           )}
         </div>
       </section>
+      <ConfirmationModal
+        isOpen={projectToDelete !== null}
+        projectName={projectToDelete?.name ?? ''}
+        isLoading={deletingProjectId !== null}
+        error={deleteError}
+        onConfirm={() => void handleDelete()}
+        onCancel={() => {
+          if (deletingProjectId !== null) return;
+          setProjectToDelete(null);
+          setDeleteError(null);
+        }}
+      />
     </div>
   );
 }

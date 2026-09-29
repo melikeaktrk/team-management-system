@@ -2,6 +2,7 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.Tests;
 
+// Entity alanları ve enum sabitlerine ilişkin temel iş kuralı kontrolleri.
 public class BusinessRuleTests
 {
     [Fact]

@@ -11,6 +11,7 @@ using TeamTaskManager.Business.Services;
 using TeamTaskManager.DataAccess;
 using TeamTaskManager.Entities;
 
+// Uygulama açılırken gerekli rollerin Identity veritabanında bulunmasını sağlar.
 static async Task SeedRolesAsync(IServiceProvider services)
 {
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
@@ -25,6 +26,7 @@ static async Task SeedRolesAsync(IServiceProvider services)
     }
 }
 
+// Ayarlarda seed bilgileri varsa varsayılan yöneticiyi oluşturur ve Admin rolünü verir.
 static async Task SeedDefaultUsersAsync(IServiceProvider services, IConfiguration configuration)
 {
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
@@ -78,8 +80,10 @@ static async Task SeedDefaultUsersAsync(IServiceProvider services, IConfiguratio
     }
 }
 
+// Servis kayıtları ve HTTP uygulama hattı bu başlangıç dosyasında yapılandırılır.
 var builder = WebApplication.CreateBuilder(args);
 
+// Geliştirme ortamındaki Vite istemcisinin API'ye istek göndermesine izin verir.
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("LocalVite", policy =>
@@ -96,9 +100,11 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException("DefaultConnection yapılandırılmalıdır.");
 }
 
+// EF Core, SQL Server bağlantısını yapılandırmadan alır.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+// Kullanıcı/rol altyapısı ve parola kuralları ASP.NET Identity ile yönetilir.
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
     {
         options.Password.RequireDigit = true;
@@ -110,6 +116,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+// JWT ayarları doğrulanır; eksik veya zayıf imza anahtarı varsa uygulama başlamaz.
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSettings["Key"];
 var jwtIssuer = jwtSettings["Issuer"];
@@ -121,6 +128,7 @@ if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32
 }
 var key = Encoding.UTF8.GetBytes(jwtKey);
 
+// Gelen Bearer token'ı doğrular ve pasif/rolü değişmiş hesapların token'ını reddeder.
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -184,6 +192,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// API'nin iş, veri erişimi ve eşleme servislerini istek başına (Scoped) kaydeder.
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -196,6 +205,7 @@ builder.Services.AddScoped<ITaskAttachmentService, TaskAttachmentService>();
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+// Swagger şemasına JWT Bearer yetkilendirme alanını ekler.
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -231,8 +241,10 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// Hata yakalama, veritabanı hazırlığı ve middleware sırası uygulama davranışını belirler.
 var app = builder.Build();
 
+// İstemciye genel hata mesajı verir; ayrıntıyı sunucu loguna yazar.
 app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 {
     var logger = context.RequestServices
@@ -248,6 +260,7 @@ app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
     });
 }));
 
+// Uygulama açılışında bekleyen migration'ları ve başlangıç rollerini uygular.
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -265,6 +278,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Kimlik doğrulama, yetki kontrolü ve controller yönlendirmesinin sırası önemlidir.
 app.UseCors("LocalVite");
 app.UseHttpsRedirection();
 app.UseAuthentication();

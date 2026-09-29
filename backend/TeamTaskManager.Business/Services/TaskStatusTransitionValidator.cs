@@ -2,8 +2,10 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.Business.Services;
 
+// Görev durumları arasındaki izin verilen geçişleri tek yerde tanımlar.
 public static class TaskStatusTransitionValidator
 {
+    // İzin listesinde bulunmayan bir durum değişikliğinin kaydedilmesini engeller.
     public static bool IsAllowed(TeamTaskManager.Entities.TaskStatus from, TeamTaskManager.Entities.TaskStatus to)
     {
         return (from, to) switch
@@ -23,6 +25,7 @@ public static class TaskStatusTransitionValidator
         };
     }
 
+    // Geçerli geçişte Completed tarihini ayarlar; görev tamamlanmaktan çıkarsa temizler.
     public static (TeamTaskManager.Entities.TaskStatus Status, DateTime? CompletedDate)? ApplyCompletedDate(TeamTaskManager.Entities.TaskStatus currentStatus, TeamTaskManager.Entities.TaskStatus nextStatus, DateTime? currentCompletedDate)
     {
         if (!IsAllowed(currentStatus, nextStatus))

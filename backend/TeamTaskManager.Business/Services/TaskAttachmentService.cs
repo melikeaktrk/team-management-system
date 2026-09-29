@@ -6,6 +6,7 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.Business.Services;
 
+// Görev dosyalarını listeleme, yükleme ve indirme işlemlerinin sözleşmesi.
 public interface ITaskAttachmentService
 {
     Task<IEnumerable<TaskAttachmentResponse>> GetByTaskAsync(Guid taskId);
@@ -14,8 +15,10 @@ public interface ITaskAttachmentService
     Task<(byte[] Content, string ContentType, string FileName)?> DownloadAsync(Guid attachmentId);
 }
 
+// Dosyayı uygulama içi klasörde saklar; veritabanında yalnızca metadata tutar.
 public class TaskAttachmentService : ITaskAttachmentService
 {
+    // Sunucu tarafındaki izin verilen uzantı, MIME ve boyut sınırları.
     private const long MaxFileSize = 10 * 1024 * 1024;
     private static readonly IReadOnlyDictionary<string, string> AllowedTypes =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -36,6 +39,7 @@ public class TaskAttachmentService : ITaskAttachmentService
         _storageRoot = Path.GetFullPath(Path.Combine(environment.ContentRootPath, "App_Data", "TaskAttachments"));
     }
 
+    // Göreve bağlı dosya metadata'sını yükleme tarihine göre sıralar.
     public async Task<IEnumerable<TaskAttachmentResponse>> GetByTaskAsync(Guid taskId)
     {
         var attachments = (await _unitOfWork.TaskAttachments.GetAllAsync())
@@ -51,6 +55,7 @@ public class TaskAttachmentService : ITaskAttachmentService
         return attachment is null ? null : ToResponse(attachment);
     }
 
+    // Dosya kontrollerini yapar, rastgele saklama adıyla yazar ve metadata/aktivite kaydeder.
     public async Task<TaskAttachmentResponse> UploadAsync(Guid taskId, Guid userId, IFormFile file)
     {
         if (file.Length <= 0 || file.Length > MaxFileSize)
@@ -107,6 +112,7 @@ public class TaskAttachmentService : ITaskAttachmentService
         return ToResponse(attachment);
     }
 
+    // Metadata ile diskteki güvenli dosya adını eşleştirip indirme içeriğini döndürür.
     public async Task<(byte[] Content, string ContentType, string FileName)?> DownloadAsync(Guid attachmentId)
     {
         var attachment = await _unitOfWork.TaskAttachments.GetByIdAsync(attachmentId);
@@ -124,6 +130,7 @@ public class TaskAttachmentService : ITaskAttachmentService
         return (await File.ReadAllBytesAsync(safePath), attachment.ContentType, attachment.OriginalFileName);
     }
 
+    // Kullanıcıdan gelen yol bileşenlerinin saklama klasörü dışına çıkmasını önler.
     private string GetSafePath(string storedFileName)
     {
         if (Path.GetFileName(storedFileName) != storedFileName)
@@ -139,6 +146,7 @@ public class TaskAttachmentService : ITaskAttachmentService
         return fullPath;
     }
 
+    // Dahili disk yolu ve rastgele saklama adını istemci yanıtına dahil etmez.
     private static TaskAttachmentResponse ToResponse(TaskAttachment attachment) => new()
     {
         Id = attachment.Id,

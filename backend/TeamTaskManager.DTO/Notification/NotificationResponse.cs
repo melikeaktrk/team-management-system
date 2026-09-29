@@ -1,5 +1,6 @@
 namespace TeamTaskManager.DTO.Notification;
 
+// API'nin bildirim listesi ve okundu güncellemesi için döndürdüğü veri modeli.
 public class NotificationResponse
 {
     public Guid Id { get; set; }

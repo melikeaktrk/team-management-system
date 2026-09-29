@@ -6,6 +6,7 @@ namespace TeamTaskManager.DTO.Project;
 /// </summary>
 public class ProjectResponse
 {
+    // İstemciye yalnızca proje özetini verir; EF entity/navigation nesnelerini dışarı taşımaz.
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }

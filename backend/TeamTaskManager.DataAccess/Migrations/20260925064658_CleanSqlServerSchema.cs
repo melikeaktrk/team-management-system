@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace TeamTaskManager.DataAccess.Migrations
 {
+    // SQL Server için Identity ve uygulama tablolarını oluşturan EF Core migration'ı.
     /// <inheritdoc />
     public partial class CleanSqlServerSchema : Migration
     {
+        // Migration veritabanına uygulandığında tablo, indeks ve foreign key'leri kurar.
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -545,6 +547,7 @@ namespace TeamTaskManager.DataAccess.Migrations
                 column: "Status");
         }
 
+        // Migration geri alınırsa Up içinde oluşturulan nesneleri ters sırayla kaldırır.
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {

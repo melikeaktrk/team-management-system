@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TeamTaskManager.DTO.Auth;
 
+// Kayıt endpoint'inin aldığı alanlar; Data Annotations API doğrulamasını çalıştırır.
 public class RegisterRequest
 {
     [Required]
@@ -18,6 +19,7 @@ public class RegisterRequest
     public string? LastName { get; set; }
 }
 
+// Girişte e-posta veya kullanıcı adından en az birini zorunlu tutar.
 public class LoginRequest : IValidatableObject
 {
     [StringLength(100)]
@@ -36,6 +38,7 @@ public class LoginRequest : IValidatableObject
     }
 }
 
+// Başarılı giriş/kayıt sonrası istemciye verilen token ve kullanıcı özetidir.
 public class AuthResponse
 {
     public string Token { get; set; } = string.Empty;
@@ -44,6 +47,7 @@ public class AuthResponse
     public string Email { get; set; } = string.Empty;
 }
 
+// Parola değiştirme endpoint'inin doğrulanan istek gövdesidir.
 public class ChangePasswordRequest
 {
     [Required]

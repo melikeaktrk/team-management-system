@@ -3,6 +3,7 @@ using TeamTaskManager.Core;
 
 namespace TeamTaskManager.Entities;
 
+// Projenin temel bilgilerini, yöneticisini, üyelerini ve görevlerini temsil eder.
 public class Project : BaseEntity
 {
     [Required]
@@ -22,6 +23,7 @@ public class Project : BaseEntity
     public ICollection<ProjectMember> Members { get; set; } = new List<ProjectMember>();
     public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 
+    // Eski string Status alanı ile enum ProjectStatus arasında geriye dönük uyumluluk sağlar.
     [Obsolete("Use ProjectStatus instead.")]
     public string Status
     {

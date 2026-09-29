@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TeamTaskManager.DTO.Task;
 
+// Yorum ekleme isteği; içerik boş olmamalı ve 1500 karakteri aşmamalıdır.
 public class TaskCommentCreateRequest
 {
     public Guid TaskItemId { get; set; }
@@ -11,6 +12,7 @@ public class TaskCommentCreateRequest
     public string Content { get; set; } = string.Empty;
 }
 
+// İstemciye gösterilen yorum ve yazar kimliği/tarih bilgisi.
 public class TaskCommentResponse
 {
     public Guid Id { get; set; }
@@ -20,6 +22,7 @@ public class TaskCommentResponse
     public DateTime CreatedAt { get; set; }
 }
 
+// Dosyanın güvenli metadata yanıtıdır; sunucudaki gerçek dosya yolu içermez.
 public class TaskAttachmentResponse
 {
     public Guid Id { get; set; }
@@ -31,6 +34,7 @@ public class TaskAttachmentResponse
     public DateTime CreatedAt { get; set; }
 }
 
+// Görev güncellemesinde gönderilen alanları temsil eder; ClearAssignment atamayı temizler.
 public class TaskItemUpdateRequest : IValidatableObject
 {
     [StringLength(200, MinimumLength = 1)]

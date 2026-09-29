@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace TeamTaskManager.Entities;
 
+// ASP.NET Identity hesabına profil alanları ve iş tablolarına navigation bağlantıları ekler.
 public class ApplicationUser : IdentityUser<Guid>
 {
     public string? FirstName { get; set; }
@@ -27,6 +28,7 @@ public class ApplicationUser : IdentityUser<Guid>
         set => UpdatedDate = value;
     }
 
+    // Kullanıcının farklı iş kayıtlarındaki ilişkili koleksiyonları EF navigation alanlarıdır.
     public ICollection<Project> ManagedProjects { get; set; } = new List<Project>();
     public ICollection<ProjectMember> ProjectMemberships { get; set; } = new List<ProjectMember>();
     public ICollection<TaskItem> AssignedTasks { get; set; } = new List<TaskItem>();

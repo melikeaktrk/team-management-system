@@ -3,8 +3,10 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.Tests;
 
+// Durum geçiş tablosunun izinli/engelli sonuçlarını ve bitiş tarihini test eder.
 public class TaskStatusTransitionTests
 {
+    // İş kuralında izin verilen farklı geçiş örnekleri true üretmelidir.
     [Theory]
     [InlineData(TeamTaskManager.Entities.TaskStatus.New, TeamTaskManager.Entities.TaskStatus.InProgress)]
     [InlineData(TeamTaskManager.Entities.TaskStatus.New, TeamTaskManager.Entities.TaskStatus.Waiting)]
@@ -18,6 +20,7 @@ public class TaskStatusTransitionTests
         Assert.True(isAllowed);
     }
 
+    // Tanımlı olmayan geçişler false olmalıdır.
     [Theory]
     [InlineData(TeamTaskManager.Entities.TaskStatus.InProgress, TeamTaskManager.Entities.TaskStatus.New)]
     [InlineData(TeamTaskManager.Entities.TaskStatus.Waiting, TeamTaskManager.Entities.TaskStatus.Completed)]
@@ -29,6 +32,7 @@ public class TaskStatusTransitionTests
         Assert.False(isAllowed);
     }
 
+    // Completed durumuna geçildiğinde CompletedDate atanmasını doğrular.
     [Fact]
     public void CompletingTask_ShouldSetCompletedDate()
     {

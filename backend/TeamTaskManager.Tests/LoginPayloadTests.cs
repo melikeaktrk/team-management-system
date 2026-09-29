@@ -2,6 +2,7 @@ using TeamTaskManager.DTO.Auth;
 
 namespace TeamTaskManager.Tests;
 
+// Oturum açma isteğinin desteklediği e-posta/parola veri biçimini doğrular.
 public class LoginPayloadTests
 {
     [Fact]

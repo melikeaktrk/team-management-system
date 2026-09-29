@@ -6,6 +6,7 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.Business.Services;
 
+// Kullanıcı listeleme, oluşturma, profil güncelleme, durum ve rol işlemlerinin sözleşmesi.
 public interface IUserService
 {
     Task<IEnumerable<UserListResponse>> GetAllAsync();
@@ -16,6 +17,7 @@ public interface IUserService
     Task<UserDetailResponse?> UpdateRoleAsync(Guid id, string role);
 }
 
+// Kullanıcı/parola/rol yönetiminde ASP.NET Identity API'lerini kullanır.
 public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -32,6 +34,7 @@ public class UserService : IUserService
         _mapper = mapper;
     }
 
+    // Kullanıcıları ad sırasıyla listeler ve Identity rollerini yanıta ekler.
     public async Task<IEnumerable<UserListResponse>> GetAllAsync()
     {
         var users = await _userManager.Users
@@ -57,6 +60,7 @@ public class UserService : IUserService
         return responses;
     }
 
+    // Kimliğe göre kullanıcıyı ve atanmış rollerini detay DTO'sunda döndürür.
     public async Task<UserDetailResponse?> GetByIdAsync(Guid id)
     {
         var user = await _userManager.FindByIdAsync(id.ToString());
@@ -77,6 +81,7 @@ public class UserService : IUserService
         };
     }
 
+    // Alan ve benzersizlik kontrollerinden sonra hesabı açar ve seçilen rolü atar.
     public async Task<UserDetailResponse> CreateAsync(UserCreateRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.UserName))
@@ -140,6 +145,7 @@ public class UserService : IUserService
         };
     }
 
+    // Çakışan e-posta/kullanıcı adını reddeder ve dolu profil alanlarını günceller.
     public async Task<UserDetailResponse?> UpdateAsync(Guid id, UserUpdateRequest request)
     {
         var user = await _userManager.FindByIdAsync(id.ToString());
@@ -182,6 +188,7 @@ public class UserService : IUserService
         return await GetByIdAsync(user.Id);
     }
 
+    // Hesabın aktiflik bayrağını Identity deposunda günceller.
     public async Task<UserDetailResponse?> UpdateStatusAsync(Guid id, bool isActive)
     {
         var user = await _userManager.FindByIdAsync(id.ToString());
@@ -199,6 +206,7 @@ public class UserService : IUserService
         return await GetByIdAsync(user.Id);
     }
 
+    // Desteklenen tek rolü atar; son Admin hesabının Admin rolünden çıkarılmasını engeller.
     public async Task<UserDetailResponse?> UpdateRoleAsync(Guid id, string role)
     {
         if (!IsSupportedRole(role) || !await _roleManager.RoleExistsAsync(role))
@@ -235,6 +243,7 @@ public class UserService : IUserService
         return await GetByIdAsync(id);
     }
 
+    // Uygulamanın kullandığı üç rol adını izin listesi olarak tutar.
     private static bool IsSupportedRole(string role) =>
         new[] { "Admin", "ProjectManager", "TeamMember" }
             .Contains(role, StringComparer.OrdinalIgnoreCase);

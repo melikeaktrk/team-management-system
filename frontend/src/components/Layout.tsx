@@ -54,7 +54,7 @@ export function Layout() {
         <header className="topbar">
           <div>
             <p className="eyebrow">Corporate workspace</p>
-            <h1>Team task management</h1>
+            <h1 className="app-title">Team task management</h1>
           </div>
           <div className="user-pill">
             {user?.userName || user?.email || 'User'}

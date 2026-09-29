@@ -6,6 +6,7 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.Business.Services;
 
+// Proje listeleme, CRUD, üyelik ve yönetici sahipliği işlemlerinin sözleşmesi.
 public interface IProjectService
 {
     Task<IEnumerable<ProjectResponse>> GetAllAsync(
@@ -38,8 +39,11 @@ public interface IProjectService
     Task<ProjectMemberResponse> AddMemberAsync(
         Guid projectId,
         ProjectMemberRequest request);
+
+    Task<bool> RemoveMemberAsync(Guid projectId, Guid userId);
 }
 
+// Proje kurallarını uygular; kalıcı değişiklikleri Unit of Work üzerinden kaydeder.
 public class ProjectService : IProjectService
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -53,6 +57,7 @@ public class ProjectService : IProjectService
         _mapper = mapper;
     }
 
+    // Admin'e tümünü, yöneticilere yönettiklerini, üyelere dahil oldukları projeleri döndürür.
     public async Task<IEnumerable<ProjectResponse>> GetAllAsync(
         Guid userId,
         bool isAdmin,
@@ -103,6 +108,7 @@ public class ProjectService : IProjectService
             memberProjects);
     }
 
+    // Kimliğe göre projeyi arar; bulunamazsa null döndürür.
     public async Task<ProjectResponse?> GetByIdAsync(Guid id)
     {
         var project =
@@ -113,6 +119,7 @@ public class ProjectService : IProjectService
             : _mapper.Map<ProjectResponse>(project);
     }
 
+    // Proje isteğini entity'ye dönüştürür ve oluşturan kullanıcıyı yönetici olarak atar.
     public async Task<ProjectResponse> CreateAsync(
         ProjectCreateRequest request,
         Guid createdByUserId)
@@ -136,6 +143,7 @@ public class ProjectService : IProjectService
             project);
     }
 
+    // Var olan proje alanlarını istekten eşleyip güncelleme zamanını kaydeder.
     public async Task<ProjectResponse?> UpdateAsync(
         Guid id,
         ProjectUpdateRequest request)
@@ -159,6 +167,7 @@ public class ProjectService : IProjectService
             project);
     }
 
+    // Projeyi repository üzerinden siler; EF ilişkilerindeki cascade kuralları uygulanır.
     public async Task<bool> DeleteAsync(Guid id)
     {
         var project =
@@ -174,6 +183,7 @@ public class ProjectService : IProjectService
         return true;
     }
 
+    // Proje yöneticisi kimliğini istek sahibinin kimliğiyle karşılaştırır.
     public async Task<bool> IsManagerAsync(
         Guid projectId,
         Guid userId)
@@ -188,6 +198,7 @@ public class ProjectService : IProjectService
         return project.ManagerUserId == userId;
     }
 
+    // Aktif olup projede aktif üyeliği bulunmayan kullanıcıları seçer.
     public async Task<IEnumerable<UserListResponse>>
         GetAvailableUsersAsync(Guid projectId)
     {
@@ -208,7 +219,8 @@ public class ProjectService : IProjectService
         var memberUserIds =
             allMembers
                 .Where(member =>
-                    member.ProjectId == projectId)
+                    member.ProjectId == projectId &&
+                    member.IsActive)
                 .Select(member =>
                     member.UserId)
                 .ToHashSet();
@@ -243,6 +255,7 @@ public class ProjectService : IProjectService
         return availableUsers;
     }
 
+    // Üyelik kayıtlarını kullanıcı bilgileriyle zenginleştirerek yanıt listesine çevirir.
     public async Task<IEnumerable<ProjectMemberResponse>>
         GetMembersAsync(Guid projectId)
     {
@@ -276,6 +289,7 @@ public class ProjectService : IProjectService
         return responses;
     }
 
+    // Kullanıcı/proje durumunu ve yinelenen üyeliği kontrol eder; pasif üyeliği yeniden açabilir.
     public async Task<ProjectMemberResponse>
         AddMemberAsync(
             Guid projectId,
@@ -304,22 +318,34 @@ public class ProjectService : IProjectService
         var allMembers =
             await _unitOfWork.ProjectMembers.GetAllAsync();
 
-        var alreadyMember =
-            allMembers.Any(member =>
+        var existingMember =
+            allMembers.FirstOrDefault(member =>
                 member.ProjectId == projectId &&
                 member.UserId == request.UserId);
 
-        if (alreadyMember)
+        if (existingMember?.IsActive == true)
             throw new InvalidOperationException(
                 "Kullanıcı zaten bu projeye eklenmiş.");
 
-        var member =
-            _mapper.Map<ProjectMember>(request);
+        var requestedMember = _mapper.Map<ProjectMember>(request);
+
+        if (existingMember is not null)
+        {
+            existingMember.IsActive = true;
+            existingMember.MemberRole = requestedMember.MemberRole;
+            existingMember.JoinedDate = DateTime.UtcNow;
+            existingMember.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.ProjectMembers.Update(existingMember);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<ProjectMemberResponse>(existingMember);
+        }
+
+        var member = requestedMember;
 
         member.ProjectId =
             projectId;
 
-        member.JoinedAt =
+        member.JoinedDate =
             DateTime.UtcNow;
 
         await _unitOfWork.ProjectMembers.AddAsync(
@@ -329,5 +355,37 @@ public class ProjectService : IProjectService
 
         return _mapper.Map<ProjectMemberResponse>(
             member);
+    }
+
+    // Yöneticiyi çıkarmaz; açık görevi olan üyeyi reddeder, aksi halde üyeliği pasifleştirir.
+    public async Task<bool> RemoveMemberAsync(Guid projectId, Guid userId)
+    {
+        var project = await _unitOfWork.Projects.GetByIdAsync(projectId);
+        if (project is null)
+            return false;
+
+        if (project.ManagerUserId == userId)
+            throw new InvalidOperationException("Proje yöneticisi bu işlemle projeden çıkarılamaz.");
+
+        var member = (await _unitOfWork.ProjectMembers.GetAllAsync())
+            .FirstOrDefault(item => item.ProjectId == projectId && item.UserId == userId);
+        if (member is null)
+            return false;
+        if (!member.IsActive)
+            return true;
+
+        var hasOpenTasks = (await _unitOfWork.Tasks.GetAllAsync())
+            .Any(task => task.ProjectId == projectId &&
+                         task.AssignedToUserId == userId &&
+                         task.Status is not (TeamTaskManager.Entities.TaskStatus.Completed or TeamTaskManager.Entities.TaskStatus.Cancelled));
+        if (hasOpenTasks)
+            throw new InvalidOperationException(
+                "Üyenin açık görevleri var. Üyeyi çıkarmadan önce bu görevleri başka bir aktif proje üyesine atayın.");
+
+        member.IsActive = false;
+        member.UpdatedAt = DateTime.UtcNow;
+        _unitOfWork.ProjectMembers.Update(member);
+        await _unitOfWork.SaveChangesAsync();
+        return true;
     }
 }

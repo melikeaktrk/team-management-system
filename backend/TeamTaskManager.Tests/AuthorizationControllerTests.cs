@@ -9,6 +9,7 @@ using TeamTaskManager.DTO.User;
 
 namespace TeamTaskManager.Tests;
 
+// Controller seviyesindeki rol ve kaynak sahipliği kontrollerini sahte servislerle sınar.
 public class AuthorizationControllerTests
 {
     private static readonly Guid OwnProjectId = Guid.NewGuid();
@@ -18,6 +19,7 @@ public class AuthorizationControllerTests
     private static readonly Guid OwnTaskId = Guid.NewGuid();
     private static readonly Guid OtherTaskId = Guid.NewGuid();
 
+    // TeamMember proje görev listesinden yalnızca kendisine atanan işleri almalıdır.
     [Fact]
     public async Task TeamMember_CanListOnlyAssignedTasks()
     {
@@ -31,6 +33,7 @@ public class AuthorizationControllerTests
         Assert.Equal(MemberId, tasks.Single().AssignedToUserId);
     }
 
+    // ProjectManager başka yöneticinin projesindeki görevleri listeleyememelidir.
     [Fact]
     public async Task ProjectManager_CannotListAnotherManagersTasks()
     {
@@ -41,6 +44,7 @@ public class AuthorizationControllerTests
         Assert.IsType<ForbidResult>(result);
     }
 
+    // Admin için görev erişiminin proje sahipliğinden bağımsız olduğunu doğrular.
     [Fact]
     public async Task Admin_CanReadTaskOutsideOwnProjects()
     {
@@ -51,6 +55,7 @@ public class AuthorizationControllerTests
         Assert.IsType<OkObjectResult>(result);
     }
 
+    // Üye başka kullanıcının görev detayına veya silme işlemine erişememelidir.
     [Fact]
     public async Task TeamMember_CannotReadOrDeleteAnotherUsersTask()
     {
@@ -60,6 +65,7 @@ public class AuthorizationControllerTests
         Assert.IsType<ForbidResult>(await controller.Delete(OtherTaskId));
     }
 
+    // Atanan TeamMember'ın kendi görevinde durum değiştirebildiğini doğrular.
     [Fact]
     public async Task TeamMember_CanUpdateOnlyStatusOfAssignedTask()
     {
@@ -70,6 +76,7 @@ public class AuthorizationControllerTests
         Assert.IsType<OkObjectResult>(result);
     }
 
+    // TeamMember'ın başlık gibi yönetici alanlarını değiştiremediğini doğrular.
     [Fact]
     public async Task TeamMember_CannotChangeOtherTaskFields()
     {
@@ -84,6 +91,7 @@ public class AuthorizationControllerTests
         Assert.IsType<BadRequestObjectResult>(result);
     }
 
+    // Üyenin görev oluşturma ve erişmediği göreve yorum ekleme yetkisi olmadığını sınar.
     [Fact]
     public async Task TeamMember_CannotCreateTasksOrAddCommentsToUnassignedTasks()
     {
@@ -93,6 +101,7 @@ public class AuthorizationControllerTests
         Assert.IsType<ForbidResult>(await controller.AddComment(OtherTaskId, new TaskCommentCreateRequest { Content = "No access" }));
     }
 
+    // Üyenin yalnızca dahil olduğu projelerin üyelik listesini açabildiğini doğrular.
     [Fact]
     public async Task ProjectMembers_AreLimitedToAccessibleProjects()
     {
@@ -103,6 +112,7 @@ public class AuthorizationControllerTests
         Assert.IsType<ForbidResult>(await controller.GetMembers(OtherProjectId));
     }
 
+    // Proje yöneticisinin başka projenin üye listesini okuyamadığını doğrular.
     [Fact]
     public async Task ProjectManager_CannotReadAnotherProjectsMembers()
     {
@@ -112,6 +122,7 @@ public class AuthorizationControllerTests
         Assert.IsType<ForbidResult>(await controller.GetMembers(OtherProjectId));
     }
 
+    // Admin'in her projeyi, yöneticinin ise kendi projesini okuyabildiğini sınar.
     [Fact]
     public async Task Admin_CanReadAnyProjectsMembers_AndManagerCanReadOwn()
     {
@@ -124,6 +135,7 @@ public class AuthorizationControllerTests
         Assert.IsType<OkObjectResult>(await managerController.GetMembers(OwnProjectId));
     }
 
+    // TeamMember rolünün proje oluşturma endpoint'inde reddedildiğini doğrular.
     [Fact]
     public async Task TeamMember_CannotCreateProjects()
     {
@@ -133,6 +145,7 @@ public class AuthorizationControllerTests
         Assert.IsType<ForbidResult>(await controller.Create(new ProjectCreateRequest { Name = "No" }));
     }
 
+    // Test için bağımlılıkları sahte olan controller'ı kurup rol/kullanıcı claim'lerini ekler.
     private static TaskController CreateTaskController(Guid userId, string role)
     {
         var controller = new TaskController(new FakeTaskService(), new FakeProjectService(), new FakeAttachmentService());
@@ -140,6 +153,7 @@ public class AuthorizationControllerTests
         return controller;
     }
 
+    // Controller test context'ine kimlik ve rol içeren ClaimsPrincipal atar.
     private static void SetUser(ControllerBase controller, Guid userId, string role)
     {
         var identity = new ClaimsIdentity(
@@ -163,8 +177,9 @@ public class AuthorizationControllerTests
         public Task<bool> IsManagerAsync(Guid projectId, Guid userId) => Task.FromResult(projectId == OwnProjectId);
         public Task<IEnumerable<UserListResponse>> GetAvailableUsersAsync(Guid projectId) => Task.FromResult<IEnumerable<UserListResponse>>([]);
         public Task<IEnumerable<ProjectMemberResponse>> GetMembersAsync(Guid projectId) => Task.FromResult<IEnumerable<ProjectMemberResponse>>(
-            projectId == OwnProjectId ? [new ProjectMemberResponse { UserId = MemberId }] : [new ProjectMemberResponse { UserId = OtherMemberId }]);
+            projectId == OwnProjectId ? [new ProjectMemberResponse { UserId = MemberId, IsActive = true }] : [new ProjectMemberResponse { UserId = OtherMemberId, IsActive = true }]);
         public Task<ProjectMemberResponse> AddMemberAsync(Guid projectId, ProjectMemberRequest request) => Task.FromResult(new ProjectMemberResponse());
+        public Task<bool> RemoveMemberAsync(Guid projectId, Guid userId) => Task.FromResult(true);
     }
 
     private sealed class FakeTaskService : ITaskService

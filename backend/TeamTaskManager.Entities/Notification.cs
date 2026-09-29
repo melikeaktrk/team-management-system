@@ -2,6 +2,7 @@ using TeamTaskManager.Core;
 
 namespace TeamTaskManager.Entities;
 
+// Kullanıcıya gösterilecek bildirimi ve okundu/ilişkili kayıt bilgisini tutar.
 public class Notification : BaseEntity
 {
     public Guid UserId { get; set; }
@@ -13,6 +14,7 @@ public class Notification : BaseEntity
     public Guid? RelatedEntityId { get; set; }
     public bool IsRead { get; set; }
 
+    // Eski string bildirim türünü mevcut enum Type alanına dönüştürür.
     [Obsolete("Use Type instead.")]
     public string LegacyType
     {

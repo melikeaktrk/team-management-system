@@ -8,6 +8,7 @@ namespace TeamTaskManager.DTO.Task;
 /// </summary>
 public class TaskItemCreateRequest : IValidatableObject
 {
+    // Proje kimliği ve opsiyonel atanan kullanıcı ek olarak boş GUID'e karşı denetlenir.
     public Guid ProjectId { get; set; }
     [Required]
     [StringLength(200, MinimumLength = 1)]

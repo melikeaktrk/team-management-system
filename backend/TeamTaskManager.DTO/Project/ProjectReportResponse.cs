@@ -2,6 +2,7 @@ using TeamTaskManager.DTO.Task;
 
 namespace TeamTaskManager.DTO.Project;
 
+// Proje rapor kartlarının toplamlar, ilerleme, üye dağılımı ve aktivite verileri.
 public class ProjectReportResponse
 {
     public Guid ProjectId { get; set; }
@@ -15,6 +16,7 @@ public class ProjectReportResponse
     public IReadOnlyList<TaskActivityResponse> RecentActivities { get; set; } = Array.Empty<TaskActivityResponse>();
 }
 
+// Rapor içindeki bir üyeye ait açık ve tamamlanmış görev toplamları.
 public class MemberTaskSummary
 {
     public Guid UserId { get; set; }

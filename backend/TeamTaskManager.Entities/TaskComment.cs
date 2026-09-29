@@ -3,6 +3,7 @@ using TeamTaskManager.Core;
 
 namespace TeamTaskManager.Entities;
 
+// Bir göreve kullanıcı tarafından eklenen metin yorumunu temsil eder.
 public class TaskComment : BaseEntity
 {
     public Guid TaskItemId { get; set; }

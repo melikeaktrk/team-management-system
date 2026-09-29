@@ -1,5 +1,6 @@
 namespace TeamTaskManager.Entities;
 
+// Veritabanı ve API genelinde kullanılan sabit proje, görev ve bildirim seçenekleri.
 public enum ProjectStatus
 {
     Planning = 0,

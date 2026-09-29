@@ -5,6 +5,7 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.DataAccess;
 
+// Identity tablolarını ve uygulama entity'lerini EF Core üzerinden SQL Server'a bağlar.
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
@@ -19,10 +20,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
 
+    // Tablo/indeks kısıtlarını, foreign key ilişkilerini ve silme davranışlarını tanımlar.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        // Identity kullanıcısının proje/görev ilişkilerinde kullanılan profil sütunları.
         modelBuilder.Entity<ApplicationUser>(entity =>
         {
             entity.ToTable("AspNetUsers");
@@ -33,6 +36,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(u => u.Email).HasMaxLength(255);
         });
 
+        // Proje adı, durum ve tarih aramaları için sınırlar/indeksler; yönetici silinirse FK null olur.
         modelBuilder.Entity<Project>(entity =>
         {
             entity.ToTable("Projects");
@@ -49,6 +53,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
+        // Aynı kullanıcı-proje ikilisinin tekrarlanmasını DB'de engeller; proje/kullanıcı silinince üyelik kalkar.
         modelBuilder.Entity<ProjectMember>(entity =>
         {
             entity.ToTable("ProjectMembers");
@@ -67,6 +72,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // Proje silinince görevler silinir; atanan/oluşturan kullanıcı silme davranışı Restrict'tir.
         modelBuilder.Entity<TaskItem>(entity =>
         {
             entity.ToTable("TaskItems");
@@ -93,6 +99,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        // Görev veya yorum sahibi kullanıcı silinince yorumlar cascade ile kaldırılır.
         modelBuilder.Entity<TaskComment>(entity =>
         {
             entity.ToTable("TaskComments");
@@ -111,6 +118,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // Görev silinince dosya metadata'sı kalkar; yükleyen kullanıcı silinirse FK boşaltılır.
         modelBuilder.Entity<TaskAttachment>(entity =>
         {
             entity.ToTable("TaskAttachments");
@@ -132,6 +140,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
+        // Bildirim kullanıcıya bağlıdır ve kullanıcı silinince bildirimleri cascade edilir.
         modelBuilder.Entity<Notification>(entity =>
         {
             entity.ToTable("Notifications");
@@ -147,6 +156,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // Audit geçmişini korumak için kullanıcı silinince aktivite kaydının UserId alanı null olur.
         modelBuilder.Entity<ActivityLog>(entity =>
         {
             entity.ToTable("ActivityLogs");

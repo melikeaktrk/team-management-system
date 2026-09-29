@@ -1,5 +1,6 @@
 namespace TeamTaskManager.DataAccess.Repositories;
 
+// EF Core entity'leri için ortak temel CRUD işlemlerini tanımlar.
 public interface IRepository<T> where T : class
 {
     Task<T?> GetByIdAsync(Guid id);

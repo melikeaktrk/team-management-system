@@ -9,6 +9,7 @@ namespace TeamTaskManager.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+// Görev işlemlerinde her uç, rol kontrolünün yanında görev/proje erişimini doğrular.
 public class TaskController : ControllerBase
 {
     private readonly ITaskService _taskService;
@@ -25,6 +26,7 @@ public class TaskController : ControllerBase
         _attachmentService = attachmentService;
     }
 
+    // Admin tüm proje görevlerini; PM proje görevlerini; üye yalnızca atandıklarını görür.
     [HttpGet("project/{projectId:guid}")]
     public async Task<IActionResult> GetByProject(Guid projectId)
     {
@@ -43,11 +45,13 @@ public class TaskController : ControllerBase
         }
 
         if (!User.IsInRole("TeamMember")) return Forbid();
+        if (!await IsActiveProjectMemberAsync(projectId, userId.Value)) return Forbid();
 
         var assignedTasks = await _taskService.GetByProjectAsync(projectId);
         return Ok(assignedTasks.Where(task => task.AssignedToUserId == userId.Value));
     }
 
+    // Filtre, sıralama ve sayfalama parametrelerini sınar; TeamMember filtresini sabitler.
     [HttpGet("project/{projectId:guid}/search")]
     public async Task<IActionResult> SearchByProject(Guid projectId, [FromQuery] TaskSearchRequest request)
     {
@@ -68,11 +72,15 @@ public class TaskController : ControllerBase
         }
 
         if (User.IsInRole("TeamMember"))
+        {
+            if (!await IsActiveProjectMemberAsync(projectId, userId.Value)) return Forbid();
             request.AssignedToUserId = userId.Value;
+        }
         var result = await _taskService.SearchByProjectAsync(projectId, request);
         return Ok(result);
     }
 
+    // Görevi getirir ve CanAccessTaskAsync ile kaynak bazlı erişimi denetler.
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
@@ -84,6 +92,7 @@ public class TaskController : ControllerBase
             : Forbid();
     }
 
+    // Görev oluşturmayı Admin veya projeyi yöneten ProjectManager ile sınırlar.
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TaskItemCreateRequest request)
     {
@@ -110,6 +119,7 @@ public class TaskController : ControllerBase
         }
     }
 
+    // Admin/PM alanları günceller; atanan TeamMember yalnızca durum değiştirebilir.
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] TaskItemUpdateRequest request)
     {
@@ -170,6 +180,7 @@ public class TaskController : ControllerBase
         }
     }
 
+    // Görevi silme işlemini Admin veya projenin yöneticisiyle sınırlar.
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -191,6 +202,7 @@ public class TaskController : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
 
+    // Erişebilen görev kullanıcısı adına yorum ekler.
     [HttpPost("{taskId:guid}/comments")]
     public async Task<IActionResult> AddComment(Guid taskId, [FromBody] TaskCommentCreateRequest request)
     {
@@ -205,6 +217,7 @@ public class TaskController : ControllerBase
         return Ok(comment);
     }
 
+    // Göreve erişim izni olan kullanıcılara yorum listesini döndürür.
     [HttpGet("{taskId:guid}/comments")]
     public async Task<IActionResult> GetComments(Guid taskId)
     {
@@ -215,6 +228,7 @@ public class TaskController : ControllerBase
         return Ok(await _taskService.GetCommentsAsync(taskId));
     }
 
+    // Görev için kaydedilmiş aktivite geçmişini yetki kontrolünden sonra döndürür.
     [HttpGet("{taskId:guid}/activity")]
     public async Task<IActionResult> GetActivity(Guid taskId)
     {
@@ -224,6 +238,7 @@ public class TaskController : ControllerBase
         return Ok(await _taskService.GetActivityForTaskAsync(taskId));
     }
 
+    // Görev dosyalarının metadata listesini erişim kontrolüyle döndürür.
     [HttpGet("{taskId:guid}/attachments")]
     public async Task<IActionResult> GetAttachments(Guid taskId)
     {
@@ -234,6 +249,7 @@ public class TaskController : ControllerBase
         return Ok(await _attachmentService.GetByTaskAsync(taskId));
     }
 
+    // Göreve dosya yükler; servis boyut/tür kontrolünü ve disk/veritabanı kaydını yapar.
     [HttpPost("{taskId:guid}/attachments")]
     [RequestSizeLimit(10 * 1024 * 1024 + 65_536)]
     public async Task<IActionResult> UploadAttachment(Guid taskId, [FromForm] IFormFile file)
@@ -256,6 +272,7 @@ public class TaskController : ControllerBase
         }
     }
 
+    // Dosya metadata'sından görev erişimini doğrular, sonra dosyayı indirme yanıtı yapar.
     [HttpGet("attachments/{attachmentId:guid}")]
     public async Task<IActionResult> DownloadAttachment(Guid attachmentId)
     {
@@ -272,6 +289,7 @@ public class TaskController : ControllerBase
             : File(download.Value.Content, download.Value.ContentType, download.Value.FileName);
     }
 
+    // Admin'e genel erişim; PM'e sahip olduğu proje, üyeye atanmış aktif üyelik şartı uygular.
     private async Task<bool> CanAccessTaskAsync(TaskItemResponse task)
     {
         if (User.IsInRole("Admin")) return true;
@@ -282,9 +300,19 @@ public class TaskController : ControllerBase
         if (User.IsInRole("ProjectManager"))
             return await _projectService.IsManagerAsync(task.ProjectId, userId.Value);
 
-        return User.IsInRole("TeamMember") && task.AssignedToUserId == userId.Value;
+        return User.IsInRole("TeamMember") &&
+               task.AssignedToUserId == userId.Value &&
+               await IsActiveProjectMemberAsync(task.ProjectId, userId.Value);
     }
 
+    // Üyelik listesinde kullanıcının proje üyeliğinin etkin olduğunu doğrular.
+    private async Task<bool> IsActiveProjectMemberAsync(Guid projectId, Guid userId)
+    {
+        var members = await _projectService.GetMembersAsync(projectId);
+        return members.Any(member => member.UserId == userId && member.IsActive);
+    }
+
+    // JWT'den kullanıcı kimliğini okuyup GUID değilse null döndürür.
     private Guid? GetCurrentUserId()
     {
         var value = User.FindFirstValue(ClaimTypes.NameIdentifier)

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TeamTaskManager.DataAccess")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e6752e49320449af1b7a0dbe2d69d9f41ad15710")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f6c02b852c8aa6416563c4ee7bb51edaa3340bdb")]
 [assembly: System.Reflection.AssemblyProductAttribute("TeamTaskManager.DataAccess")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TeamTaskManager.DataAccess")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

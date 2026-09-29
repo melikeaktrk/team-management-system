@@ -51,5 +51,8 @@ export const projectApi = {
       `/api/Project/${projectId}/members`,
       payload
     ),
+
+  removeMember: (projectId: string, userId: string) =>
+    api.delete(`/api/Project/${projectId}/members/${userId}`),
 };
 

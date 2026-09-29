@@ -3,6 +3,7 @@ using TeamTaskManager.Core;
 
 namespace TeamTaskManager.Entities;
 
+// Görev dosyasının metadata'sını ve diskteki dahili saklama adını tutar.
 public class TaskAttachment : BaseEntity
 {
     public Guid TaskItemId { get; set; }
@@ -16,6 +17,7 @@ public class TaskAttachment : BaseEntity
     public Guid? UploadedByUserId { get; set; }
     public ApplicationUser? UploadedByUser { get; set; }
 
+    // Eski dosya alan adları yeni metadata alanlarına yönlendirilir.
     [Obsolete("Use OriginalFileName instead.")]
     public string FileName
     {

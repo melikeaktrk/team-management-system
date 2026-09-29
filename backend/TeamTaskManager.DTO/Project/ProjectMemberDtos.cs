@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TeamTaskManager.DTO.Project;
 
+// Projeye kullanıcı ekleme isteği; boş kullanıcı kimliği özel doğrulamayla reddedilir.
 public class ProjectMemberRequest : IValidatableObject
 {
     public Guid UserId { get; set; }
@@ -15,6 +16,7 @@ public class ProjectMemberRequest : IValidatableObject
     }
 }
 
+// Üyelik kaydı ile ekranda gösterilecek kullanıcı alanlarını bir arada sunar.
 public class ProjectMemberResponse
 {
     public Guid Id { get; set; }
@@ -29,6 +31,7 @@ public class ProjectMemberResponse
     public DateTime JoinedAt { get; set; }
 }
 
+// Kısmi proje güncellemesinde yalnızca gönderilen alanlar değiştirilir.
 public class ProjectUpdateRequest
 {
     [StringLength(150, MinimumLength = 1)]

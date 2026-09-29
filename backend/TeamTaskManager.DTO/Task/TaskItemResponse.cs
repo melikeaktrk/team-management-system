@@ -6,6 +6,7 @@ namespace TeamTaskManager.DTO.Task;
 /// </summary>
 public class TaskItemResponse
 {
+    // API'nin görev ekranlarına gönderdiği özet alanlar; entity ilişkileri yanıta eklenmez.
     public Guid Id { get; set; }
     public Guid ProjectId { get; set; }
     public string Title { get; set; } = string.Empty;

@@ -1,5 +1,6 @@
 namespace TeamTaskManager.DTO.Task;
 
+// Görev aramasındaki filtreler, sıralama ve sayfalama parametreleri.
 public class TaskSearchRequest
 {
     public string? Status { get; set; }
@@ -13,6 +14,7 @@ public class TaskSearchRequest
     public string? SortDirection { get; set; } = "asc";
 }
 
+// Sayfalı sonuçlarda kayıtların yanında sayfa ve toplam kayıt bilgisini taşır.
 public class PagedResponse<T>
 {
     public IReadOnlyList<T> Items { get; set; } = Array.Empty<T>();
@@ -22,6 +24,7 @@ public class PagedResponse<T>
     public int TotalPages { get; set; }
 }
 
+// Aktivite akışında gösterilecek eylem, açıklama ve kullanıcı bilgisi.
 public class TaskActivityResponse
 {
     public Guid Id { get; set; }

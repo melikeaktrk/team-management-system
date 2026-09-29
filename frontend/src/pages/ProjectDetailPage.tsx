@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 import { projectApi } from '../api/projectApi';
 import { taskApi } from '../api/taskApi';
 import { useAuth } from '../features/auth/AuthContext';
@@ -72,6 +73,15 @@ export function ProjectDetailPage() {
     useState('');
 
   const [projectSuccess, setProjectSuccess] =
+    useState('');
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] =
+    useState(false);
+
+  const [deleteLoading, setDeleteLoading] =
+    useState(false);
+
+  const [deleteError, setDeleteError] =
     useState('');
 
   const loadData = async () => {
@@ -153,6 +163,33 @@ export function ProjectDetailPage() {
       setMemberError(
         'Üye eklenirken bir hata oluştu.'
       );
+    } finally {
+      setMemberLoading(false);
+    }
+  };
+
+  const handleRemoveMember = async (member: ProjectMember) => {
+    if (!id) return;
+
+    const memberName = member.firstName || member.userName || member.email || member.userId;
+    if (!window.confirm(`${memberName} üyesini projeden çıkarmak istiyor musunuz?`)) return;
+
+    try {
+      setMemberLoading(true);
+      setMemberError('');
+      await projectApi.removeMember(id, member.userId);
+
+      const [membersResponse, availableUsersResponse] = await Promise.all([
+        projectApi.getMembers(id),
+        projectApi.getAvailableUsers(id),
+      ]);
+      setMembers(membersResponse.data);
+      setAvailableUsers(availableUsersResponse.data);
+    } catch (error) {
+      console.error(error);
+      const responseMessage = (error as { response?: { data?: { message?: string } } })
+        .response?.data?.message;
+      setMemberError(responseMessage || 'Üye projeden çıkarılamadı. Açık görevlerini önce başka bir üyeye atayın.');
     } finally {
       setMemberLoading(false);
     }
@@ -248,17 +285,9 @@ export function ProjectDetailPage() {
   const handleDelete = async () => {
     if (!id || !project) return;
 
-    const confirmed =
-      window.confirm(
-        `"${project.name}" projesini silmek istediğinize emin misiniz?`
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
     try {
-      setProjectError('');
+      setDeleteLoading(true);
+      setDeleteError('');
       setProjectSuccess('');
 
       await projectApi.remove(id);
@@ -266,10 +295,9 @@ export function ProjectDetailPage() {
       navigate('/projects');
     } catch (error) {
       console.error(error);
-
-      setProjectError(
-        'Proje silinemedi.'
-      );
+      setDeleteError('Proje silinemedi. Lütfen tekrar deneyin.');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -342,9 +370,10 @@ export function ProjectDetailPage() {
 
             <button
               type="button"
-              onClick={() =>
-                void handleDelete()
-              }
+              onClick={() => {
+                setDeleteError('');
+                setIsDeleteModalOpen(true);
+              }}
             >
               Sil
             </button>
@@ -554,11 +583,12 @@ export function ProjectDetailPage() {
                 <h4>{member.role}</h4>
 
                 <p>
-                  Kullanıcı ID:{' '}
-                  {member.userId}
+                  {member.firstName || member.userName || member.email || member.userId}
+                  {member.lastName ? ` ${member.lastName}` : ''}
                 </p>
 
                 <div className="meta-line">
+                  <span>{member.isActive ? 'Aktif' : 'Projeden çıkarıldı'}</span>
                   <span>
                     Katılım:{' '}
                     {formatTurkishDate(
@@ -566,6 +596,13 @@ export function ProjectDetailPage() {
                     )}
                   </span>
                 </div>
+                {canManageMembers && member.isActive && <button
+                  type="button"
+                  onClick={() => void handleRemoveMember(member)}
+                  disabled={memberLoading}
+                >
+                  {memberLoading ? 'İşleniyor...' : 'Projeden çıkar'}
+                </button>}
               </div>
             ))
           )}
@@ -727,6 +764,18 @@ export function ProjectDetailPage() {
           Projelere dön
         </Link>
       </div>
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        projectName={project?.name ?? ''}
+        isLoading={deleteLoading}
+        error={deleteError}
+        onConfirm={() => void handleDelete()}
+        onCancel={() => {
+          if (deleteLoading) return;
+          setIsDeleteModalOpen(false);
+          setDeleteError('');
+        }}
+      />
     </div>
   );
 }

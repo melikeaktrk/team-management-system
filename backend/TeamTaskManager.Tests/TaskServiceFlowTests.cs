@@ -8,8 +8,10 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.Tests;
 
+// Gerçek SQL yerine bellek içi sahte UnitOfWork kullanarak servis akışlarını sınar.
 public class TaskServiceFlowTests
 {
+    // Gerçek AutoMapper profiliyle test edilen TaskService örneği üretir.
     private static TaskService CreateService(InMemoryUnitOfWork unitOfWork)
     {
         var mapper = new MapperConfiguration(configuration =>
@@ -17,6 +19,7 @@ public class TaskServiceFlowTests
         return new TaskService(unitOfWork, mapper);
     }
 
+    // Yeni görevin New durumuyla açıldığını ve istenen önceliğin korunduğunu kontrol eder.
     [Fact]
     public async Task CreateAsync_UsesNewStatusAndRequestedPriority()
     {
@@ -35,6 +38,7 @@ public class TaskServiceFlowTests
         Assert.Single(unitOfWork.TaskRepository.Items);
     }
 
+    // Güncellemede izin verilen durum değişikliğinin tarih alanına etkisini kontrol eder.
     [Fact]
     public async Task UpdateAsync_AppliesAllowedStatusAndCompletedDate()
     {
@@ -54,6 +58,7 @@ public class TaskServiceFlowTests
         Assert.Null(task.CompletedDate);
     }
 
+    // Durum aynı kaldığında diğer görev alanlarının güncellenebildiğini doğrular.
     [Fact]
     public async Task UpdateAsync_AllowsOtherFieldChangesWhenStatusIsUnchanged()
     {
@@ -71,6 +76,7 @@ public class TaskServiceFlowTests
         Assert.Equal("New", updated.Status);
     }
 
+    // Tamamlanma tarihinin atanmasını ve izin verilmeyen geçişin hata vermesini sınar.
     [Fact]
     public async Task UpdateStatusAsync_SetsCompletedDate_AndRejectsDisallowedTransition()
     {
@@ -86,6 +92,7 @@ public class TaskServiceFlowTests
             service.UpdateStatusAsync(task.Id, TeamTaskManager.Entities.TaskStatus.Waiting));
     }
 
+    // Bildirim servisinin başka kullanıcının bildirimini sonuçlara katmadığını sınar.
     [Fact]
     public async Task NotificationService_ReturnsOnlyCurrentUsersNotifications()
     {
@@ -114,6 +121,7 @@ public class TaskServiceFlowTests
         Assert.Equal("Mine", result.Single().Title);
     }
 
+    // Her entity türü için bellek içi repository sağlayan test doubles sınıfı.
     private sealed class InMemoryUnitOfWork : IUnitOfWork
     {
         public InMemoryRepository<Project> ProjectRepository { get; } = new(x => x.Id);
@@ -142,6 +150,7 @@ public class TaskServiceFlowTests
         public void Dispose() { }
     }
 
+    // Liste üzerinde temel repository davranışlarını taklit eder; gerçek EF çalıştırmaz.
     private sealed class InMemoryRepository<T>(Func<T, Guid> getId) : IRepository<T> where T : class
     {
         public List<T> Items { get; } = [];

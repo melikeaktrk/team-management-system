@@ -2,6 +2,7 @@ using TeamTaskManager.Core;
 
 namespace TeamTaskManager.Entities;
 
+// Kullanıcı ile proje arasındaki üyelik; aktiflik ve proje içi rol bilgisi burada tutulur.
 public class ProjectMember : BaseEntity
 {
     public Guid ProjectId { get; set; }
@@ -14,6 +15,7 @@ public class ProjectMember : BaseEntity
     public bool IsActive { get; set; } = true;
     public DateTime JoinedDate { get; set; } = DateTime.UtcNow;
 
+    // Eski alan adlarını destekleyen özellikler yeni enum/tarih alanlarına yönlendirir.
     [Obsolete("Use MemberRole instead.")]
     public string Role
     {

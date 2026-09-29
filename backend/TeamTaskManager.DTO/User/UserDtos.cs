@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TeamTaskManager.DTO.User;
 
+// Kullanıcı tablolarında kullanılan kısa profil ve rol yanıtı.
 public class UserListResponse
 {
     public Guid Id { get; set; }
@@ -14,6 +15,7 @@ public class UserListResponse
     public List<string> Roles { get; set; } = [];
 }
 
+// Kullanıcı ayrıntı ekranı için liste yanıtına son giriş zamanını ekler.
 public class UserDetailResponse
 {
     public Guid Id { get; set; }
@@ -27,6 +29,7 @@ public class UserDetailResponse
     public List<string> Roles { get; set; } = [];
 }
 
+// Admin'in hesap oluştururken gönderdiği, alan doğrulamalı istek modeli.
 public class UserCreateRequest
 {
     [Required]
@@ -47,6 +50,7 @@ public class UserCreateRequest
     public string? Role { get; set; }
 }
 
+// Kullanıcı profilinin değiştirilebilir temel alanları; null alanlar korunur.
 public class UserUpdateRequest
 {
     [StringLength(100, MinimumLength = 1)]
@@ -60,11 +64,13 @@ public class UserUpdateRequest
     public string? LastName { get; set; }
 }
 
+// Hesap erişimini etkin/pasif yapmak için kullanılan tek alanlı istek.
 public class UserStatusUpdateRequest
 {
     public bool IsActive { get; set; }
 }
 
+// Kullanıcıya atanacak uygulama rolü; izinli rol adlarıyla doğrulanır.
 public class UserRoleUpdateRequest
 {
     [Required]

@@ -125,9 +125,78 @@ button {
   color: #94a3b8;
 }
 
-.topbar h1 {
+.topbar h1.app-title {
   margin: 6px 0 0;
   font-size: clamp(2rem, 2vw, 2.7rem);
+  color: #ffffff;
+}
+
+.confirmation-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(2, 6, 23, 0.76);
+  backdrop-filter: blur(5px);
+}
+
+.confirmation-modal {
+  width: min(100%, 460px);
+  padding: 26px;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 18px;
+  background: #111827;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+.confirmation-modal h2 {
+  margin: 0 0 10px;
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.confirmation-modal p {
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.65;
+}
+
+.confirmation-modal strong {
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+.confirmation-modal-error {
+  margin-top: 16px !important;
+  color: #fecaca !important;
+}
+
+.confirmation-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.confirmation-modal-actions button {
+  min-width: 104px;
+  padding: 10px 15px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 10px;
+  background: rgba(148, 163, 184, 0.1);
+  color: #e2e8f0;
+}
+
+.confirmation-modal-actions .confirmation-danger {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: #b91c1c;
+  color: #fff;
+}
+
+.confirmation-modal-actions .confirmation-danger:hover:not(:disabled) {
+  background: #dc2626;
 }
 
 .user-pill {

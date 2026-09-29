@@ -10,6 +10,7 @@ using TeamTaskManager.DataAccess;
 
 namespace TeamTaskManager.DataAccess.Migrations
 {
+    // EF Core'un yeni migration üretirken karşılaştırdığı mevcut model anlık görüntüsü.
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {

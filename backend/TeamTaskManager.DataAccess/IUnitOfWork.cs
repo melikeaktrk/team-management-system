@@ -3,6 +3,7 @@ using TeamTaskManager.DataAccess.Repositories;
 
 namespace TeamTaskManager.DataAccess;
 
+// Birden fazla repository işlemini ortak DbContext ve tek SaveChanges çağrısında birleştirir.
 public interface IUnitOfWork : IDisposable
 {
     IRepository<Project> Projects { get; }

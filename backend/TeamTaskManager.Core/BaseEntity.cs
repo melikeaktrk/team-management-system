@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TeamTaskManager.Core;
 
+// Ortak kimlik, oluşturulma/güncellenme zamanı ve silinme alanlarını entity'lere sağlar.
 public abstract class BaseEntity
 {
     [Key]
@@ -12,6 +13,7 @@ public abstract class BaseEntity
     public DateTime? UpdatedDate { get; set; }
     public bool IsDeleted { get; set; }
 
+    // CreatedAt eski/alternatif adıdır; NotMapped olduğu için ayrı DB sütunu oluşturmaz.
     [NotMapped]
     public DateTime CreatedAt
     {
@@ -19,6 +21,7 @@ public abstract class BaseEntity
         set => CreatedDate = value;
     }
 
+    // UpdatedAt eski/alternatif adıdır; gerçek değer UpdatedDate alanında saklanır.
     [NotMapped]
     public DateTime? UpdatedAt
     {

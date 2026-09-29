@@ -3,6 +3,7 @@ using TeamTaskManager.Entities;
 
 namespace TeamTaskManager.DataAccess;
 
+// Uygulamadaki repository nesnelerini üretir ve değişiklikleri ortak context'e kaydeder.
 public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
@@ -28,11 +29,13 @@ public class UnitOfWork : IUnitOfWork
         Users = new Repository<ApplicationUser>(_context);
     }
 
+    // Bekleyen tüm entity değişikliklerini veritabanına yazar.
     public async Task<int> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync();
     }
 
+    // İstek kapsamı sona erdiğinde DbContext kaynaklarını serbest bırakır.
     public void Dispose()
     {
         _context.Dispose();

@@ -8,6 +8,7 @@ namespace TeamTaskManager.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+// Bildirim uçları yalnızca giriş yapmış kullanıcının kendi kayıtları üzerinde çalışır.
 public class NotificationController : ControllerBase
 {
     private readonly INotificationService _notificationService;
@@ -17,6 +18,7 @@ public class NotificationController : ControllerBase
         _notificationService = notificationService;
     }
 
+    // Oturum sahibinin bildirimlerini tarih sırasıyla listeler.
     [HttpGet]
     public async Task<IActionResult> GetNotifications()
     {
@@ -27,6 +29,7 @@ public class NotificationController : ControllerBase
         return Ok(await _notificationService.GetForUserAsync(userId));
     }
 
+    // Tek bildirimi okundu yapar; servis başka kullanıcının bildirimini bulamaz.
     [HttpPatch("{id:guid}/read")]
     public async Task<IActionResult> MarkAsRead(Guid id)
     {
@@ -37,6 +40,7 @@ public class NotificationController : ControllerBase
         return notification is null ? NotFound() : Ok(notification);
     }
 
+    // Oturum sahibinin tüm okunmamış bildirimlerini okundu işaretler.
     [HttpPatch("read-all")]
     public async Task<IActionResult> MarkAllAsRead()
     {
@@ -47,6 +51,7 @@ public class NotificationController : ControllerBase
         return Ok(new { updatedCount });
     }
 
+    // JWT claim'lerinden GUID kullanıcı kimliğini güvenli biçimde çıkarır.
     private Guid? GetCurrentUserId()
     {
         var claim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("nameid");

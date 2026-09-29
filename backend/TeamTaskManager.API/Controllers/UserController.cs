@@ -11,6 +11,7 @@ namespace TeamTaskManager.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Admin")]
+// Kullanıcı yönetimi uçları controller seviyesinde Admin rolüyle sınırlandırılmıştır.
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -22,6 +23,7 @@ public class UserController : ControllerBase
         _userManager = userManager;
     }
 
+    // Token rolü eksik/eski olsa bile Identity'deki güncel Admin rolünü kontrol eder.
     private async Task<bool> IsAdminAsync()
     {
         if (User.IsInRole("Admin"))
@@ -40,6 +42,7 @@ public class UserController : ControllerBase
         return await _userManager.IsInRoleAsync(user, "Admin");
     }
 
+    // Kullanıcı listesi yalnızca Admin'e açıktır.
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -50,6 +53,7 @@ public class UserController : ControllerBase
         return Ok(users);
     }
 
+    // Kimliğe göre kullanıcı detayını getirir.
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
@@ -60,6 +64,7 @@ public class UserController : ControllerBase
         return user is null ? NotFound(new { message = "Kullanıcı bulunamadı." }) : Ok(user);
     }
 
+    // Kullanıcı ve seçilen rolü oluşturur.
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] UserCreateRequest request)
     {
@@ -77,6 +82,7 @@ public class UserController : ControllerBase
         }
     }
 
+    // Kullanıcı adı, e-posta ve temel profil alanlarını günceller.
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UserUpdateRequest request)
     {
@@ -94,6 +100,7 @@ public class UserController : ControllerBase
         }
     }
 
+    // Hesabı etkinleştirir veya pasifleştirir.
     [HttpPatch("{id:guid}/status")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UserStatusUpdateRequest request)
     {
@@ -111,6 +118,7 @@ public class UserController : ControllerBase
         }
     }
 
+    // Kullanıcının uygulama rolünü değiştirir.
     [HttpPut("{id:guid}/role")]
     public async Task<IActionResult> UpdateRole(Guid id, [FromBody] UserRoleUpdateRequest request)
     {

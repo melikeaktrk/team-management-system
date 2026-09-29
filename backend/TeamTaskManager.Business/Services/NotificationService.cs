@@ -4,6 +4,7 @@ using TeamTaskManager.DTO.Notification;
 
 namespace TeamTaskManager.Business.Services;
 
+// Bildirim okuma ve okundu işaretleme işlemlerinin servis sözleşmesi.
 public interface INotificationService
 {
     Task<IEnumerable<NotificationResponse>> GetForUserAsync(Guid userId);
@@ -11,6 +12,7 @@ public interface INotificationService
     Task<int> MarkAllAsReadAsync(Guid userId);
 }
 
+// Bildirimleri yalnızca ilgili kullanıcı kimliğine göre seçip günceller.
 public class NotificationService : INotificationService
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -22,6 +24,7 @@ public class NotificationService : INotificationService
         _mapper = mapper;
     }
 
+    // Kullanıcının bildirimlerini en yeniden eskiye sıralayıp DTO'ya dönüştürür.
     public async Task<IEnumerable<NotificationResponse>> GetForUserAsync(Guid userId)
     {
         var notifications = (await _unitOfWork.Notifications.GetAllAsync())
@@ -32,6 +35,7 @@ public class NotificationService : INotificationService
         return _mapper.Map<IEnumerable<NotificationResponse>>(notifications);
     }
 
+    // Bildirim başka kullanıcıya aitse değiştirmeden null döndürür.
     public async Task<NotificationResponse?> MarkAsReadAsync(Guid notificationId, Guid userId)
     {
         var notification = await _unitOfWork.Notifications.GetByIdAsync(notificationId);
@@ -44,6 +48,7 @@ public class NotificationService : INotificationService
         return _mapper.Map<NotificationResponse>(notification);
     }
 
+    // Kullanıcının okunmamış kayıtlarını tek seferde işaretler ve adedi döndürür.
     public async Task<int> MarkAllAsReadAsync(Guid userId)
     {
         var notifications = (await _unitOfWork.Notifications.GetAllAsync())
