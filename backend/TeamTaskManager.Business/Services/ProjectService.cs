@@ -86,14 +86,15 @@ public class ProjectService : IProjectService
                 managedProjects);
         }
 
-        // TeamMember sadece üyesi olduğu projeleri görebilir.
+        // TeamMember yalnızca aktif üyeliği bulunan projeleri görebilir.
         var allMembers =
             await _unitOfWork.ProjectMembers.GetAllAsync();
 
         var memberProjectIds =
             allMembers
                 .Where(member =>
-                    member.UserId == userId)
+                    member.UserId == userId &&
+                    member.IsActive)
                 .Select(member =>
                     member.ProjectId)
                 .ToHashSet();

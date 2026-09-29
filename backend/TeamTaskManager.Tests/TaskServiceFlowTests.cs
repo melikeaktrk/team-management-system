@@ -24,11 +24,13 @@ public class TaskServiceFlowTests
     public async Task CreateAsync_UsesNewStatusAndRequestedPriority()
     {
         var unitOfWork = new InMemoryUnitOfWork();
+        var projectId = Guid.NewGuid();
+        unitOfWork.ProjectRepository.Items.Add(new Project { Id = projectId });
         var service = CreateService(unitOfWork);
 
         var created = await service.CreateAsync(new TaskItemCreateRequest
         {
-            ProjectId = Guid.NewGuid(),
+            ProjectId = projectId,
             Title = "First task",
             Priority = "High"
         });
