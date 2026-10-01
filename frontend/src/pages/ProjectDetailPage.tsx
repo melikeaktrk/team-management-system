@@ -57,6 +57,8 @@ export function ProjectDetailPage() {
 
   const [memberError, setMemberError] =
     useState('');
+  const [memberToRemove, setMemberToRemove] =
+    useState<ProjectMember | null>(null);
 
   const [editing, setEditing] =
     useState(false);
@@ -171,9 +173,6 @@ export function ProjectDetailPage() {
   const handleRemoveMember = async (member: ProjectMember) => {
     if (!id) return;
 
-    const memberName = member.firstName || member.userName || member.email || member.userId;
-    if (!window.confirm(`${memberName} üyesini projeden çıkarmak istiyor musunuz?`)) return;
-
     try {
       setMemberLoading(true);
       setMemberError('');
@@ -185,6 +184,7 @@ export function ProjectDetailPage() {
       ]);
       setMembers(membersResponse.data);
       setAvailableUsers(availableUsersResponse.data);
+      setMemberToRemove(null);
     } catch (error) {
       console.error(error);
       const responseMessage = (error as { response?: { data?: { message?: string } } })
@@ -598,7 +598,7 @@ export function ProjectDetailPage() {
                 </div>
                 {canManageMembers && member.isActive && <button
                   type="button"
-                  onClick={() => void handleRemoveMember(member)}
+                  onClick={() => setMemberToRemove(member)}
                   disabled={memberLoading}
                 >
                   {memberLoading ? 'İşleniyor...' : 'Projeden çıkar'}
@@ -764,6 +764,21 @@ export function ProjectDetailPage() {
           Projelere dön
         </Link>
       </div>
+      <ConfirmationModal
+        isOpen={memberToRemove !== null}
+        title="Üyeyi projeden çıkarmak istiyor musunuz?"
+        description={<>{memberToRemove?.firstName || memberToRemove?.userName || memberToRemove?.email || memberToRemove?.userId} kullanıcısı projeden çıkarılacak. Bu işlem kullanıcının açık görevlerini etkileyebilir.</>}
+        confirmLabel="Projeden çıkar"
+        loadingLabel="Çıkarılıyor..."
+        isLoading={memberLoading}
+        error={memberError}
+        onConfirm={() => memberToRemove && void handleRemoveMember(memberToRemove)}
+        onCancel={() => {
+          if (memberLoading) return;
+          setMemberToRemove(null);
+          setMemberError('');
+        }}
+      />
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         projectName={project?.name ?? ''}

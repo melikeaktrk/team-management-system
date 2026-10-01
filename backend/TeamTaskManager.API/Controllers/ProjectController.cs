@@ -125,7 +125,7 @@ public async Task<IActionResult> GetAll()
         if (userId is null)
         {
             return Unauthorized(
-                "Kullanıcı kimliği JWT üzerinden alınamadı.");
+                "Kullanıcı kimliği JWT üzerinden alınamadı .");
         }
 
         var createdProject =

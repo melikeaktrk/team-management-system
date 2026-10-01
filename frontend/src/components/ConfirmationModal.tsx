@@ -2,7 +2,11 @@ import { useEffect } from 'react';
 
 type ConfirmationModalProps = {
   isOpen: boolean;
-  projectName: string;
+  projectName?: string;
+  title?: string;
+  description?: React.ReactNode;
+  confirmLabel?: string;
+  loadingLabel?: string;
   isLoading: boolean;
   error?: string | null;
   onConfirm: () => void;
@@ -12,6 +16,10 @@ type ConfirmationModalProps = {
 export function ConfirmationModal({
   isOpen,
   projectName,
+  title = 'Projeyi silmek istiyor musunuz?',
+  description,
+  confirmLabel = 'Projeyi sil',
+  loadingLabel = 'Siliniyor...',
   isLoading,
   error,
   onConfirm,
@@ -41,12 +49,12 @@ export function ConfirmationModal({
         className="confirmation-modal"
         role="alertdialog"
         aria-modal="true"
-        aria-labelledby="delete-project-title"
-        aria-describedby="delete-project-description"
+        aria-labelledby="confirmation-title"
+        aria-describedby="confirmation-description"
       >
-        <h2 id="delete-project-title">Projeyi silmek istiyor musunuz?</h2>
-        <p id="delete-project-description">
-          <strong>{projectName}</strong> projesini silmek istediğinize emin misiniz? Bu işlem projeyi ve ilişkili görev verilerini silebilir ve geri alınamaz.
+        <h2 id="confirmation-title">{title}</h2>
+        <p id="confirmation-description">
+          {description ?? <><strong>{projectName}</strong> projesini silmek istediğinize emin misiniz? Bu işlem projeyi ve ilişkili görev verilerini silebilir ve geri alınamaz.</>}
         </p>
         {error && <p className="confirmation-modal-error" role="alert">{error}</p>}
         <div className="confirmation-modal-actions">
@@ -59,7 +67,7 @@ export function ConfirmationModal({
             onClick={onConfirm}
             disabled={isLoading}
           >
-            {isLoading ? 'Siliniyor...' : 'Projeyi sil'}
+            {isLoading ? loadingLabel : confirmLabel}
           </button>
         </div>
       </section>

@@ -7,12 +7,12 @@ export function Layout() {
 
   const isAdmin = user?.roles?.includes('Admin') ?? false;
   const navItems = [
-    { to: '/', label: 'Dashboard' },
-    { to: '/projects', label: 'Projects' },
-    { to: '/tasks', label: 'Tasks' },
-    { to: '/notifications', label: 'Notifications' },
-    { to: '/profile', label: 'Profile' },
-    ...(isAdmin ? [{ to: '/users', label: 'Users' }] : []),
+    { to: '/', label: 'Panel' },
+    { to: '/projects', label: 'Projeler' },
+    { to: '/tasks', label: 'Görevler' },
+    { to: '/notifications', label: 'Bildirimler' },
+    { to: '/profile', label: 'Profil' },
+    ...(isAdmin ? [{ to: '/users', label: 'Kullanıcılar' }] : []),
   ];
 
   const handleLogout = () => {
